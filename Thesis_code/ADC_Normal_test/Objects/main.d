@@ -39,3 +39,8 @@
 .\objects\main.o: delay.h
 .\objects\main.o: system_timetick.h
 .\objects\main.o: uart.h
+.\objects\main.o: timer.h
+.\objects\main.o: adc.h
+.\objects\main.o: exti.h
+.\objects\main.o: status.h
+.\objects\main.o: type.h

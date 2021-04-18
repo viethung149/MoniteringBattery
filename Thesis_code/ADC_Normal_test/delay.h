@@ -6,5 +6,5 @@ static __IO uint32_t TimingDelay;// bien dem  cua ham sys tick
 /* Private function prototypes -----------------------------------------------*/
 void timetick_configure(void); //nho khoi tao ham nay trc
 void Delay_ms(__IO uint32_t nTime);// ho?t d?ng t?t dã test
-void Dellay_us1(uint16_t period);
+void Dellay_us(uint16_t period);
 #endif

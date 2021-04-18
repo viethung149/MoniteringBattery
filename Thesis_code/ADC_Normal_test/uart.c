@@ -1,5 +1,5 @@
 #include "uart.h"
-void INIT_UART(void)
+void UART_init_config(void)
 {
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1,ENABLE);
 	USART_InitTypeDef uart;
@@ -12,9 +12,15 @@ void INIT_UART(void)
 	USART_Init(USART1,&uart);
 	USART_ITConfig(USART1,USART_IT_RXNE,ENABLE);
 	USART_Cmd(USART1,ENABLE);
+	NVIC_InitTypeDef  nvic;
+	nvic.NVIC_IRQChannel=USART1_IRQn;
+	nvic.NVIC_IRQChannelCmd=ENABLE;
+	nvic.NVIC_IRQChannelPreemptionPriority=0;
+	nvic.NVIC_IRQChannelSubPriority=0;
+	NVIC_Init(&nvic);
 }
 // PB6 TX PB7 RX
-void INIT_GPIOUART(void)
+void UART_pin_config(void)
 {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB,ENABLE);
 	GPIO_InitTypeDef gpio;
@@ -27,31 +33,23 @@ void INIT_GPIOUART(void)
 	GPIO_PinAFConfig (GPIOB,GPIO_PinSource6, GPIO_AF_USART1);
 	GPIO_PinAFConfig (GPIOB,GPIO_PinSource7, GPIO_AF_USART1);
 }
-void INIT_IT_UART(void)
-{
-	NVIC_InitTypeDef  nvic;
-	nvic.NVIC_IRQChannel=USART1_IRQn;
-	nvic.NVIC_IRQChannelCmd=ENABLE;
-	nvic.NVIC_IRQChannelPreemptionPriority=0;
-	nvic.NVIC_IRQChannelSubPriority=0;
-	NVIC_Init(&nvic);
-}
-void USART_PutChar(char c)
+
+void UART_PutChar(char c)
 	{
 		// check xem data dc chuyển đến thanh ghi dịch chưa nếu chưa thì bằng 0 nếu rổi thì bằng 1
 		//while(USART_GetFlagStatus (USART1, USART_FLAG_TXE)==0);
 		USART_SendData(USART1,(uint16_t)c);
 		
 	}
-	void USART_PutString(char* str)
+void UART_PutString(char* str)
 	{
 		while(*str )
 		{
-			USART_PutChar(*str);
+			UART_PutChar(*str);
 			str++;
 		}
 	}
-	uint16_t USART_GetChar(void)
+uint16_t UART_GetChar(void)
 {
  while(USART_GetFlagStatus(USART1,USART_FLAG_RXNE)==0);
  return USART_ReceiveData (USART1);

@@ -21,7 +21,7 @@ void SysTick_Handler(void)
     TimingDelay--;
   }
 }
-void Dellay_us1(uint16_t period){
+void Dellay_us(uint16_t period){
 
   	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
   	TIM6->PSC = 83;		// clk = SystemCoreClock /2/(PSC+1) = 1MHz

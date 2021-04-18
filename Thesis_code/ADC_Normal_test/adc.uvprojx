@@ -467,6 +467,26 @@
               <FileType>1</FileType>
               <FilePath>E:\Thesis_code\ADC_Normal_test\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_exti.c</FilePath>
             </File>
+            <File>
+              <FileName>adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>status.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\status.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\timer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -9,23 +9,37 @@
 #include "status.h"
 #include "type.h"
 float voltage_module1[16]={0};
+float voltage_module2[16]={0};
+uint16_t PIN_SELECT_MODULE1[]={ENABLE_MODULE_1, 
+															 S0_MODULE_1,
+															 S1_MODULE_1,
+															 S2_MODULE_1,
+															 S3_MODULE_1};
+
+uint16_t PIN_SELECT_MODULE2[]={ENABLE_MODULE_2,
+															 S0_MODULE_2,
+															 S1_MODULE_2,
+															 S2_MODULE_2,
+															 S3_MODULE_2};
 int cnt=1;
-int battery_temp_ratio[]={BATTERY1_P1,
-													BATTERY2_P1,
-													BATTERY3_P1,
-													BATTERY4_P1,
-													BATTERY1_P2,
-													BATTERY2_P2,
-													BATTERY3_P2,
-													BATTERY4_P2,
-													TEM1_P1,
-													TEM2_P1,
-													TEM3_P1,
-													TEM4_P1,
-													TEM1_P2,
-													TEM2_P2,
-													TEM3_P2,
-													TEM4_P2};
+int battery_ratio[]={BATTERY1_P1,
+										 BATTERY2_P1,
+										 BATTERY3_P1,
+										 BATTERY4_P1,
+										 BATTERY1_P2,
+										 BATTERY2_P2,
+										 BATTERY3_P2,
+										 BATTERY4_P2,
+										 0,0,0,0,0,0,0,0};
+int temp_ratio[]={TEM1_P1,
+									TEM2_P1,
+									TEM3_P1,
+									TEM4_P1,
+									TEM1_P2,
+									TEM2_P2,
+									TEM3_P2,
+								  TEM4_P2,
+									0,0,0,0,0,0,0,0};
 
 int temperature_ratio[]={};
 //--uart--//
@@ -66,32 +80,40 @@ int fputc(int ch, FILE *f) {
 
 //----------------------------------------------------------------------------------------------------
 //interrup uart 
-void USART1_IRQHandler(void)
-{
-	while(USART_GetITStatus(USART1,USART_IT_RXNE)==1)
-	{
-			GPIO_SetBits(GPIOC,GPIO_Pin_6);
-			printf("read from  uart \n");
-			RX_buffer[index_rx_buffer++]=USART1->DR;
-			if(index_rx_buffer==100)index_rx_buffer=0;
-			GPIO_ResetBits(GPIOC, GPIO_Pin_6);
-	}
-}
+//void USART1_IRQHandler(void)
+//{
+//	while(USART_GetITStatus(USART1,USART_IT_RXNE)==1)
+//	{
+//			GPIO_SetBits(GPIOC,GPIO_Pin_6);
+//			printf("read from  uart \n");
+//			RX_buffer[index_rx_buffer++]=USART1->DR;
+//			if(index_rx_buffer==100)index_rx_buffer=0;
+//			GPIO_ResetBits(GPIOC, GPIO_Pin_6);
+//	}
+//}
 //----------------------------------------------------------------------------------------------------
 // interrup timer 2
 void TIM2_IRQHandler(void) {
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)// kiem tra xem co ngat cua tim 2 bat chua
-	{
+	{	
+		GPIO_ToggleBits(GPIOC,GPIO_Pin_5);
 		TIM_Cmd(TIM2,DISABLE);	
 		if(READ_ADC_FLAG == Bit_RESET )
 		{	
-			for(int i =0 ; i < 16 ; i++ )
+			for(int i =0 ; i < 8 ; i++ )
 			{
-				voltage_module1[i]= ADC_get_voltage_from_channel(ADC1,NUMBER_READ,i,VOLTAGE_REF);
+				voltage_module1[i]= ADC_get_voltage_from_channel(ADC_MODULE1,NUMBER_READ,i,MODULE1,VOLTAGE_REF);
 				Dellay_us(10);
 			}
-		
+			ADC_Cmd(ADC1,DISABLE);
+			for(int i =0 ; i < 4 ; i++ )
+			{
+				voltage_module2[i]= ADC_get_voltage_from_channel(ADC_MODULE2,NUMBER_READ,i,MODULE2,VOLTAGE_REF);
+				Dellay_us(10);
+			}
+			ADC_Cmd(ADC2,DISABLE);
 		}
+
 		TIM_Cmd(TIM2,ENABLE);
 		READ_ADC_FLAG=Bit_SET;
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);//xoa co  ngat nho thanh  ghi pending bit
@@ -226,24 +248,26 @@ void EXTI9_5_IRQHandler(void){
 //----------------------------------------------------------------------------------------------------
 int main()
 {
-	//printf("Test ADC /n");
+	
+	printf("Test ADC /n");
 	SystemInit();
 	ADC_pin_select_config();
 	ADC_pin_config();
 	timetick_configure();
 	UART_pin_config();
 	UART_init_config();
-	//EXTI_Pin_config();
-	//EXTI_line_config();
+	EXTI_Pin_config();
+	EXTI_line_config();
 	TIMER_interupt_config();
 	STATUS_pin_peripheral_config();
+
 	while(1)
 	{
 	  if(READ_ADC_FLAG == Bit_SET)
 		{
-			for(int i =0 ;i<16; i++){
-				//printf("Voltage %d read is %1.3f \n",i+1,voltage_module1[i]*battery_temp_ratio[i]);
-			}
+//			for(int i =0 ;i<16; i++){
+//			printf("Voltage %d read is %1.3f \n",i+1,voltage_module1[i]*battery_temp_ratio[i]);
+//			}
 			READ_ADC_FLAG = Bit_RESET;
 		}
 	}

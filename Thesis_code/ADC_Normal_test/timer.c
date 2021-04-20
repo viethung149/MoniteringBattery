@@ -4,7 +4,7 @@ void TIMER_interupt_config(void)
 {
 	TIM_TimeBaseInitTypeDef tim_struct;
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
-	tim_struct.TIM_Period = 3000000-1;
+	tim_struct.TIM_Period = 5000000-1;
 	tim_struct.TIM_Prescaler = (uint16_t)(SystemCoreClock/2/1000000)-1;
 	tim_struct.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInit(TIM2, &tim_struct);

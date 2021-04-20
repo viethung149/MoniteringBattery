@@ -1,10 +1,14 @@
 #include "adc.h"
 #include "delay.h"
+#include "type.h"
+extern uint16_t PIN_SELECT_MODULE1[];
+extern uint16_t PIN_SELECT_MODULE2[];
 void ADC_pin_select_config(void)
 {
 		//Pin PD12, PD13, PD14, PD15 select channel
 		//Pin 11 enable modedule adc 
 		RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD,ENABLE);
+	  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE,ENABLE);
 		GPIO_InitTypeDef GPIO_config;
 		GPIO_config.GPIO_Mode=GPIO_Mode_OUT;
 		GPIO_config.GPIO_OType=GPIO_OType_PP;
@@ -12,6 +16,10 @@ void ADC_pin_select_config(void)
 		GPIO_config.GPIO_PuPd=GPIO_PuPd_NOPULL;
 		GPIO_config.GPIO_Speed=GPIO_Speed_100MHz;
 		GPIO_Init(GPIOD,&GPIO_config);
+		//Pin PE1, PE2, PE3, PE4 select channel
+		//Pin PE0 enable modedule adc 
+		GPIO_config.GPIO_Pin=GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4;
+		GPIO_Init(GPIOE,&GPIO_config);
 }
 //-------------------------------------------------------------------------------------
 void ADC_pin_config(void)
@@ -21,75 +29,88 @@ void ADC_pin_config(void)
 		GPIO_InitTypeDef GPIO_config;
 		GPIO_config.GPIO_Mode=GPIO_Mode_AN;
 		GPIO_config.GPIO_OType=GPIO_OType_PP;
-		GPIO_config.GPIO_Pin=GPIO_Pin_1;
+		GPIO_config.GPIO_Pin=GPIO_Pin_1|GPIO_Pin_2;
 		GPIO_config.GPIO_PuPd=GPIO_PuPd_NOPULL;
 		GPIO_config.GPIO_Speed=GPIO_Speed_100MHz;
 		GPIO_Init(GPIOA,&GPIO_config);
 	  // config overview ADC
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1,ENABLE);  					       // enable APB2
+	  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2,ENABLE);  					       // enable APB2
 		ADC_DeInit();
 		ADC_InitTypeDef ADC_config;
-	  ADC_config.ADC_ContinuousConvMode=ENABLE;                            // read continuous
+	  ADC_config.ADC_ContinuousConvMode=DISABLE;                            // read continuous
 		ADC_config.ADC_DataAlign=ADC_DataAlign_Right;                         // data align left
 	  ADC_config.ADC_ExternalTrigConv=ADC_ExternalTrigConvEdge_None;
 		ADC_config.ADC_ExternalTrigConvEdge=ADC_ExternalTrigConvEdge_None;    
 		ADC_config.ADC_NbrOfConversion=1;                                    //Read one channel
 	  ADC_config.ADC_Resolution=ADC_Resolution_12b;                          // Resolution: 12b
-		ADC_config.ADC_ScanConvMode=DISABLE;                                 //conversion one channel
+		ADC_config.ADC_ScanConvMode=DISABLE;		//conversion one channel
+		
 		ADC_Init(ADC1,&ADC_config);
-		ADC_RegularChannelConfig(ADC1,ADC_Channel_1,1,ADC_SampleTime_28Cycles); /* choose channel and time sampling */
+		ADC_Init(ADC2,&ADC_config);
+		ADC_RegularChannelConfig(ADC1,ADC_Channel_1,1,ADC_SampleTime_84Cycles); /* choose channel and time sampling */
+		ADC_RegularChannelConfig(ADC2,ADC_Channel_2,1,ADC_SampleTime_84Cycles); 
 }
 //----------------------------------------------------------------------------------------------------
-int ADC_select_channel(int channel)
+int ADC_select_channel(int module, int channel)
 {
-		if(channel >15) return -1;
-		else{
-		uint16_t starting = GPIO_Pin_12;
-		for(int i =0 ;i< 4;i++)
-		{
-			BitAction Action;
-			int remain = channel%2;
-			channel/= 2;
-			if(remain ==1) Action = Bit_SET;
-			else Action = Bit_RESET;
-			GPIO_WriteBit(GPIOD,starting,Action);
-			starting = starting << 1;
-		}
-		return channel;
-		}
+	if(module == 1 && channel <= 15){
+			for(int i =0 ;i< 4;i++)
+			{
+				BitAction Action;
+				int remain = channel%2;
+				channel/= 2;
+				Action = remain == 1? Bit_SET:Bit_RESET;
+				GPIO_WriteBit(PORT_MODULE1,PIN_SELECT_MODULE1[i+1],Action);
+			}
+			return channel;
+	}
+	else if(module == 2 && channel <=15){
+			for(int i =0 ;i< 4;i++)
+			{
+				BitAction Action;
+				int remain = channel%2;
+				channel/= 2;
+				Action = remain == 1? Bit_SET:Bit_RESET;
+				GPIO_WriteBit(PORT_MODULE2,PIN_SELECT_MODULE2[i+1],Action);
+			}
+			return channel;
+	}
+	else{
+	return -1;
+	}
 }
 //----------------------------------------------------------------------------------------------------
 float ADC_get_digital(ADC_TypeDef* ADCx, int numberRead)
 {
 	float sum_digital =0;
+
 	for(int i=0; i<numberRead; i++)
-	{
+	{	
+		ADC_Cmd(ADCx,ENABLE);
+		ADC_SoftwareStartConv(ADCx);
 		while(!ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC));//Processing the conversion
 		uint16_t value_digital = ADC_GetConversionValue(ADCx);
-		sum_digital += value_digital;
-		Dellay_us(100);
+		sum_digital += (float)value_digital;
+		Dellay_us(10);
 	}
-	GPIO_WriteBit(GPIOD,GPIO_Pin_11,Bit_SET);
 	return sum_digital/numberRead;
 }
 //----------------------------------------------------------------------------------------------------
 float ADC_get_value_voltage(ADC_TypeDef* ADCx, int numberRead, float voltage_ref)
 {
-	GPIO_ResetBits(GPIOD,GPIO_Pin_11);
-	Dellay_us(2);
 	float sum_voltage =0;
+	
 	for(int i=0; i<numberRead; i++)
 	{
-		ADC_Cmd(ADC1,ENABLE);
-		ADC_SoftwareStartConv(ADC1);
+		ADC_Cmd(ADCx,ENABLE);
+		ADC_SoftwareStartConv(ADCx);
 		while(!ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC));//Processing the conversion
 		uint16_t value_digital = ADC_GetConversionValue(ADCx);
-		float Voltage = value_digital*(voltage_ref/4095);
-		ADC_ClearFlag(ADC1,ADC_FLAG_EOC);
+		float Voltage = (float)value_digital*(voltage_ref/4095);
 		sum_voltage += Voltage;
-		ADC_Cmd(ADC1,DISABLE);
+		Dellay_us(10);
 	}
-	GPIO_SetBits(GPIOD,GPIO_Pin_11);
 	return sum_voltage/numberRead;
 }
 //----------------------------------------------------------------------------
@@ -98,31 +119,40 @@ float ADC_get_value_voltage_mv(ADC_TypeDef* ADCx, int numberRead, float voltage_
 	float sum_voltage =0;
 	for(int i=0; i<numberRead; i++)
 	{
-		//while(!ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC));//Processing the conversion
+		ADC_Cmd(ADCx,ENABLE);
+		ADC_SoftwareStartConv(ADCx);
+		while(!ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC));//Processing the conversion
 		uint16_t value_digital = ADC_GetConversionValue(ADCx);
 		float Voltage = value_digital*(voltage_ref*1000/4095);
 		sum_voltage += Voltage;
 		Dellay_us(10);
 	}
-	GPIO_SetBits(GPIOD,GPIO_Pin_11);
-	
 	return sum_voltage/numberRead;
 }
 //----------------------------------------------------------------------------------------------------
-float ADC_get_voltage_from_channel(ADC_TypeDef* ADCx, int numberRead, int channel,  float voltage_ref)
+float ADC_get_voltage_from_channel(ADC_TypeDef* ADCx, int numberRead, int channel,int module, float voltage_ref)
 {
-	ADC_select_channel(channel);
-	return ADC_get_value_voltage(ADCx,numberRead,voltage_ref);
+	ADC_select_channel(module,channel);
+	module == 1 ? GPIO_ResetBits(PORT_MODULE1,PIN_SELECT_MODULE1[0]):GPIO_ResetBits(PORT_MODULE2,PIN_SELECT_MODULE2[0]); 
+	float voltage = ADC_get_value_voltage(ADCx,numberRead,voltage_ref);
+	module == 1 ? GPIO_SetBits(PORT_MODULE1,PIN_SELECT_MODULE1[0]):GPIO_SetBits(PORT_MODULE2,PIN_SELECT_MODULE2[0]); 
+	return voltage;
 }
 //----------------------------------------------------------------------------------------------------
-float ADC_get_digital_from_channel(ADC_TypeDef* ADCx, int numberRead, int channel)
+float ADC_get_digital_from_channel(ADC_TypeDef* ADCx, int numberRead,int module, int channel)
 {
-	ADC_select_channel(channel);
-	return ADC_get_digital(ADCx,numberRead);
+	ADC_select_channel(module,channel);
+	module == 1 ? GPIO_ResetBits(PORT_MODULE1,PIN_SELECT_MODULE1[0]):GPIO_ResetBits(PORT_MODULE2,PIN_SELECT_MODULE2[0]); 
+	float digital = ADC_get_digital(ADCx,numberRead);
+	module == 1 ? GPIO_SetBits(PORT_MODULE1,PIN_SELECT_MODULE1[0]):GPIO_SetBits(PORT_MODULE2,PIN_SELECT_MODULE2[0]);
+  return digital;	
 }
 //-------------------------------------------------------------------------------------------
-float ADC_get_voltage_from_channel_mv(ADC_TypeDef* ADCx, int numberRead, int channel,  float voltage_ref)
+float ADC_get_voltage_from_channel_mv(ADC_TypeDef* ADCx, int numberRead, int channel,int module,  float voltage_ref)
 {
-	ADC_select_channel(channel);
-	return ADC_get_value_voltage_mv(ADCx,numberRead,voltage_ref);
+	ADC_select_channel(module,channel);
+	module == 1 ? GPIO_ResetBits(PORT_MODULE1,PIN_SELECT_MODULE1[0]):GPIO_ResetBits(PORT_MODULE2,PIN_SELECT_MODULE2[0]); 
+	float voltage = ADC_get_value_voltage_mv(ADCx,numberRead,voltage_ref);
+	module == 1 ? GPIO_SetBits(PORT_MODULE1,PIN_SELECT_MODULE1[0]):GPIO_SetBits(PORT_MODULE2,PIN_SELECT_MODULE2[0]); 
+	return voltage;
 }

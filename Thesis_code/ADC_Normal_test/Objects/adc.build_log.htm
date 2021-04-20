@@ -27,6 +27,22 @@ Project File Date:  04/18/2021
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Target 1'
+compiling timer.c...
+timer.h(7): warning:  #1-D: last line of file ends without a newline
+  #endif
+timer.c(21): warning:  #1-D: last line of file ends without a newline
+  }
+timer.c: 2 warnings, 0 errors
+compiling adc.c...
+adc.h(16): warning:  #1-D: last line of file ends without a newline
+  #endif
+delay.h(10): warning:  #1-D: last line of file ends without a newline
+  #endif
+type.h(57): warning:  #1-D: last line of file ends without a newline
+  #endif
+adc.c(158): warning:  #1-D: last line of file ends without a newline
+  }
+adc.c: 4 warnings, 0 errors
 compiling main.c...
 delay.h(10): warning:  #1-D: last line of file ends without a newline
   #endif
@@ -40,16 +56,16 @@ exti.h(9): warning:  #1-D: last line of file ends without a newline
   #endif
 status.h(7): warning:  #1-D: last line of file ends without a newline
   #endif
-type.h(38): warning:  #1-D: last line of file ends without a newline
+type.h(57): warning:  #1-D: last line of file ends without a newline
   #endif
-main.c(250): warning:  #111-D: statement is unreachable
+main.c(274): warning:  #111-D: statement is unreachable
   	return 0;
-main.c(251): warning:  #1-D: last line of file ends without a newline
+main.c(275): warning:  #1-D: last line of file ends without a newline
   }
 main.c: 9 warnings, 0 errors
 linking...
-Program Size: Code=6962 RO-data=450 RW-data=140 ZI-data=2948  
-".\Objects\adc.axf" - 0 Error(s), 9 Warning(s).
+Program Size: Code=7538 RO-data=450 RW-data=224 ZI-data=3016  
+".\Objects\adc.axf" - 0 Error(s), 15 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -89,7 +105,7 @@ Package Vendor: Keil
 
    * Component: Keil.ARM Compiler::Compiler:I/O:STDOUT:Breakpoint:1.2.0
       Source file:   Source\retarget_io.c
-Build Time Elapsed:  00:00:01
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>

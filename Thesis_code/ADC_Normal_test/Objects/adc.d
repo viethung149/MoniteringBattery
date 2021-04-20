@@ -38,3 +38,4 @@
 .\objects\adc.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
 .\objects\adc.o: delay.h
 .\objects\adc.o: system_timetick.h
+.\objects\adc.o: type.h

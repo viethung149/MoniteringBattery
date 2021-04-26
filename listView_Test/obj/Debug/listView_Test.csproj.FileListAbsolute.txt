@@ -1,0 +1,10 @@
+E:\App_C#\Template\listView_Test\obj\Debug\listView_Test.Form1.resources
+E:\App_C#\Template\listView_Test\obj\Debug\listView_Test.Properties.Resources.resources
+E:\App_C#\Template\listView_Test\obj\Debug\listView_Test.csproj.GenerateResource.cache
+E:\App_C#\Template\listView_Test\obj\Debug\listView_Test.csproj.CoreCompileInputs.cache
+E:\App_C#\Template\listView_Test\bin\Debug\listView_Test.exe.config
+E:\App_C#\Template\listView_Test\bin\Debug\listView_Test.exe
+E:\App_C#\Template\listView_Test\bin\Debug\listView_Test.pdb
+E:\App_C#\Template\listView_Test\obj\Debug\listView_Test.csprojAssemblyReference.cache
+E:\App_C#\Template\listView_Test\obj\Debug\listView_Test.exe
+E:\App_C#\Template\listView_Test\obj\Debug\listView_Test.pdb

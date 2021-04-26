@@ -37,3 +37,4 @@
 .\objects\package_data.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dcmi.h
 .\objects\package_data.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
 .\objects\package_data.o: type.h
+.\objects\package_data.o: uart.h

@@ -15,7 +15,6 @@ typedef enum
 {
 	INFO = 0, // send data sensor   (Header I)
 	HUMAN_TOUCH,// send when people pressbutton on the PCB board (Header H)
-	WARNING,    // send when just warning (Header W)
 	EMER,       // send when emergency     (Header E)
 }TX_types;
 //-------------------- define for Extract frame -----------------------------
@@ -97,5 +96,35 @@ union floatToByte
 #define SIZE_BUFFER_TX     150
 //-------------------- define UART RX --------------------------------------
 #define SIZE_BUFFER_RX     1000
+//---------------------- pheripheral --------------------------------
+#define SIZE_PHERIPHERAL 16
+#define START_STOP  0
+#define LOAD_CHARGE 1
+#define RELAY_1     2
+#define RELAY_2     3
+#define FAN_1       5
+#define FAN_2       6
+//---------------------- error ---------------------------------------
+#define SIZE_EMER 32 
+#define EMER_VOLTAGE_B1 0
+#define EMER_VOLTAGE_B2 1
+#define EMER_VOLTAGE_B3 2
+#define EMER_VOLTAGE_B4 3
+#define EMER_VOLTAGE_B5 4
+#define EMER_VOLTAGE_B6 5
+#define EMER_VOLTAGE_B7 6
+#define EMER_VOLTAGE_B8 7
 
+#define EMER_TEMP_B1 8
+#define EMER_TEMP_B2 9
+#define EMER_TEMP_B3 10
+#define EMER_TEMP_B4 11
+#define EMER_TEMP_B5 12
+#define EMER_TEMP_B6 13
+#define EMER_TEMP_B7 14
+#define EMER_TEMP_B8 15
+
+#define EMER_TEMP_CURRENT_1 16
+#define EMER_TEMP_CURRENT_2 17
+#define EMER_TEMP_CURRENT_3 18
 #endif

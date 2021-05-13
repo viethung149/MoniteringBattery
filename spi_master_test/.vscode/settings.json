@@ -1,0 +1,16 @@
+{
+  "terminal.integrated.shell.windows": "cmd.exe",
+  "terminal.integrated.shellArgs.windows": ["/k", "C:\\Users\\ADMIN\\Desktop\\esp-idf-2\\export.bat"],
+  "terminal.integrated.shell.linux": "/bin/bash",
+  "terminal.integrated.shellArgs.linux": ["--init-file", "~/Desktop/esp-idf-2/export.sh", "-i"],
+  "terminal.integrated.shell.osx": "/bin/bash",
+  "terminal.integrated.shellArgs.osx": ["--init-file", "~/Desktop/esp-idf-2/export.sh", "-i"],
+  "files.associations": {
+    "*.md": "markdown",
+    "*.mdx": "tdx",
+    "stdio.h": "c",
+    "array": "c",
+    "string": "c",
+    "string_view": "c"
+  }
+}

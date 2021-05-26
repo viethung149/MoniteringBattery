@@ -108,7 +108,7 @@ float ADC_get_value_voltage(ADC_TypeDef* ADCx, int numberRead, float voltage_ref
 		uint16_t value_digital = ADC_GetConversionValue(ADCx);
 		float Voltage = (float)value_digital*(voltage_ref/4095);
 		sum_voltage += Voltage;
-		Dellay_us(10);
+		Dellay_us(100);
 	}
 	return sum_voltage/numberRead;
 }
@@ -124,7 +124,7 @@ float ADC_get_value_voltage_mv(ADC_TypeDef* ADCx, int numberRead, float voltage_
 		uint16_t value_digital = ADC_GetConversionValue(ADCx);
 		float Voltage = value_digital*(voltage_ref*1000/4095);
 		sum_voltage += Voltage;
-		Dellay_us(10);
+		Dellay_us(100);
 	}
 	return sum_voltage/numberRead;
 }

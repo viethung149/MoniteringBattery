@@ -10,6 +10,13 @@ typedef enum
   OFF = 0,
   ON
 }Status;
+//-- define status of battery voltage
+typedef enum
+{
+	MIN = 0,
+	NORMAL, 
+	MAX
+}B_Voltage_status;
 //--------------------- define types send uart ----------------------------------
 typedef enum
 {
@@ -38,7 +45,7 @@ union floatToByte
 #define S2_MODULE_1  		GPIO_Pin_14
 #define S3_MODULE_1  		GPIO_Pin_15
 #define SIZE_MODULE_1   16
-#define SIZE_BATTERY    16
+#define SIZE_BATTERY    8
 
 
 #define MODULE2         2
@@ -50,18 +57,18 @@ union floatToByte
 #define S2_MODULE_2  		 GPIO_Pin_3
 #define S3_MODULE_2  		 GPIO_Pin_4
 #define SIZE_MODULE_2   16
-#define SIZE_TEMPERATURE 16
+#define SIZE_TEMPERATURE 8
 
 //---------------------- define ratio battery -----------------------
-#define BATTERY1_P1  2
-#define BATTERY2_P1  3
-#define BATTERY3_P1  5
-#define BATTERY4_P1  6
+#define BATTERY1_P1  2.0
+#define BATTERY2_P1  3.0
+#define BATTERY3_P1  5.08
+#define BATTERY4_P1  6.0
 
-#define BATTERY1_P2  2
-#define BATTERY2_P2  3
-#define BATTERY3_P2  5
-#define BATTERY4_P2  6
+#define BATTERY1_P2  2.0
+#define BATTERY2_P2  3.0
+#define BATTERY3_P2  5.0
+#define BATTERY4_P2  6.0
 
 //--------------------- status battery ---------------------------------
 #define  STATUS_B1 0
@@ -85,13 +92,13 @@ union floatToByte
 //--------------------- define ratio temperature--------------------------
 #define TEM1_P1  100
 #define TEM2_P1  100
-#define TEM3_P1  0
-#define TEM4_P1  0
+#define TEM3_P1  100
+#define TEM4_P1  100
 
-#define TEM1_P2  0
-#define TEM2_P2  0
-#define TEM3_P2  0
-#define TEM4_P2  0
+#define TEM1_P2  100
+#define TEM2_P2  100
+#define TEM3_P2  100
+#define TEM4_P2  100
 //-------------------- define UART TX --------------------------------------
 #define SIZE_BUFFER_TX     150
 //-------------------- define UART RX --------------------------------------
@@ -105,7 +112,7 @@ union floatToByte
 #define FAN_1       5
 #define FAN_2       6
 //---------------------- error ---------------------------------------
-#define SIZE_EMER 32 
+#define SIZE_EMER 32
 #define EMER_VOLTAGE_B1 0
 #define EMER_VOLTAGE_B2 1
 #define EMER_VOLTAGE_B3 2

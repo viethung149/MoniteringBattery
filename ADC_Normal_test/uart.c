@@ -4,7 +4,7 @@ void UART_init_config(void)
 {
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1,ENABLE);
 	USART_InitTypeDef uart;
-	uart.USART_BaudRate=19200;
+	uart.USART_BaudRate=9600;
 	uart.USART_HardwareFlowControl=USART_HardwareFlowControl_None;
 	uart.USART_Mode=USART_Mode_Tx|USART_Mode_Rx;
 	uart.USART_Parity=USART_Parity_No;

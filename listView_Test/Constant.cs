@@ -12,14 +12,14 @@ namespace listView_Test
         public const  int NUMBER_BATTERY = 16;
         public const  int NUMBER_PACKET = 3;
         public const  int NUMBER_PHERI = 5;
-
-        public const int TAB_BATTERY_COLUMN = 4;
+        public const int TAB_BATTERY_COLUMN = 5;
     }
     public struct Battery
     {
         public float voltage;
         public float temperature;
-        public bool warning;
+        public bool warning_voltage;
+        public bool warning_temperature;
         public bool status_balance;
     }
     public struct Package

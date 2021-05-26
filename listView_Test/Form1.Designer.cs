@@ -67,13 +67,18 @@ namespace listView_Test
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.btnFan2 = new System.Windows.Forms.Button();
             this.btnFan1 = new System.Windows.Forms.Button();
-            this.btnRelay3 = new System.Windows.Forms.Button();
             this.btnRelay2 = new System.Windows.Forms.Button();
             this.btnRelay1 = new System.Windows.Forms.Button();
-            this.btnLoad = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
             this.Port = new System.IO.Ports.SerialPort(this.components);
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.btnChart = new System.Windows.Forms.Button();
+            this.panel4 = new System.Windows.Forms.Panel();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.lineChart = new MindFusion.Charting.WinForms.LineChart();
+            this.lineChart1 = new MindFusion.Charting.WinForms.LineChart();
+            this.splitter1 = new System.Windows.Forms.Splitter();
             this.CustomTabControl.SuspendLayout();
             this.tabBattery.SuspendLayout();
             this.tabPackage.SuspendLayout();
@@ -82,6 +87,12 @@ namespace listView_Test
             this.panel2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
+            this.panel4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
             // LargerIconImageList
@@ -106,13 +117,15 @@ namespace listView_Test
             // 
             // CustomTabControl
             // 
+            this.CustomTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.CustomTabControl.Controls.Add(this.tabBattery);
             this.CustomTabControl.Controls.Add(this.tabPackage);
             this.CustomTabControl.Controls.Add(this.tabPheripheral);
-            this.CustomTabControl.Location = new System.Drawing.Point(2, 191);
+            this.CustomTabControl.Location = new System.Drawing.Point(2, 252);
             this.CustomTabControl.Name = "CustomTabControl";
             this.CustomTabControl.SelectedIndex = 0;
-            this.CustomTabControl.Size = new System.Drawing.Size(417, 256);
+            this.CustomTabControl.Size = new System.Drawing.Size(396, 234);
             this.CustomTabControl.TabIndex = 1;
             // 
             // tabBattery
@@ -121,7 +134,7 @@ namespace listView_Test
             this.tabBattery.Location = new System.Drawing.Point(4, 22);
             this.tabBattery.Name = "tabBattery";
             this.tabBattery.Padding = new System.Windows.Forms.Padding(3);
-            this.tabBattery.Size = new System.Drawing.Size(409, 230);
+            this.tabBattery.Size = new System.Drawing.Size(388, 208);
             this.tabBattery.TabIndex = 0;
             this.tabBattery.Text = "Monitering Battery";
             this.tabBattery.UseVisualStyleBackColor = true;
@@ -134,7 +147,7 @@ namespace listView_Test
             this.CustomListView_Battery.HideSelection = false;
             this.CustomListView_Battery.Location = new System.Drawing.Point(3, 3);
             this.CustomListView_Battery.Name = "CustomListView_Battery";
-            this.CustomListView_Battery.Size = new System.Drawing.Size(403, 224);
+            this.CustomListView_Battery.Size = new System.Drawing.Size(382, 202);
             this.CustomListView_Battery.TabIndex = 0;
             this.CustomListView_Battery.UseCompatibleStateImageBehavior = false;
             // 
@@ -144,7 +157,7 @@ namespace listView_Test
             this.tabPackage.Location = new System.Drawing.Point(4, 22);
             this.tabPackage.Name = "tabPackage";
             this.tabPackage.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPackage.Size = new System.Drawing.Size(409, 230);
+            this.tabPackage.Size = new System.Drawing.Size(388, 208);
             this.tabPackage.TabIndex = 1;
             this.tabPackage.Text = "Package_Monitoring";
             this.tabPackage.UseVisualStyleBackColor = true;
@@ -155,7 +168,7 @@ namespace listView_Test
             this.CustomListView_Package.HideSelection = false;
             this.CustomListView_Package.Location = new System.Drawing.Point(3, 3);
             this.CustomListView_Package.Name = "CustomListView_Package";
-            this.CustomListView_Package.Size = new System.Drawing.Size(403, 224);
+            this.CustomListView_Package.Size = new System.Drawing.Size(382, 202);
             this.CustomListView_Package.TabIndex = 1;
             this.CustomListView_Package.UseCompatibleStateImageBehavior = false;
             // 
@@ -165,7 +178,7 @@ namespace listView_Test
             this.tabPheripheral.Location = new System.Drawing.Point(4, 22);
             this.tabPheripheral.Name = "tabPheripheral";
             this.tabPheripheral.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPheripheral.Size = new System.Drawing.Size(409, 230);
+            this.tabPheripheral.Size = new System.Drawing.Size(388, 208);
             this.tabPheripheral.TabIndex = 2;
             this.tabPheripheral.Text = "Monitering Pheripheral";
             this.tabPheripheral.UseVisualStyleBackColor = true;
@@ -176,7 +189,7 @@ namespace listView_Test
             this.CustomListView_Pheripheral.HideSelection = false;
             this.CustomListView_Pheripheral.Location = new System.Drawing.Point(3, 3);
             this.CustomListView_Pheripheral.Name = "CustomListView_Pheripheral";
-            this.CustomListView_Pheripheral.Size = new System.Drawing.Size(403, 224);
+            this.CustomListView_Pheripheral.Size = new System.Drawing.Size(382, 202);
             this.CustomListView_Pheripheral.TabIndex = 0;
             this.CustomListView_Pheripheral.UseCompatibleStateImageBehavior = false;
             // 
@@ -184,7 +197,7 @@ namespace listView_Test
             // 
             this.groupBox1.Controls.Add(this.panel2);
             this.groupBox1.Controls.Add(this.panel1);
-            this.groupBox1.Location = new System.Drawing.Point(419, 218);
+            this.groupBox1.Location = new System.Drawing.Point(260, 12);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(369, 225);
             this.groupBox1.TabIndex = 2;
@@ -193,6 +206,9 @@ namespace listView_Test
             // 
             // panel2
             // 
+            this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panel2.Controls.Add(this.btnConnectWifi);
             this.panel2.Controls.Add(this.btnDisconnecWifi);
             this.panel2.Controls.Add(this.label8);
@@ -266,6 +282,9 @@ namespace listView_Test
             // 
             // panel1
             // 
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.Controls.Add(this.label9);
             this.panel1.Controls.Add(this.cbStop);
             this.panel1.Controls.Add(this.label7);
@@ -402,21 +421,19 @@ namespace listView_Test
             // 
             this.groupBox2.Controls.Add(this.btnFan2);
             this.groupBox2.Controls.Add(this.btnFan1);
-            this.groupBox2.Controls.Add(this.btnRelay3);
             this.groupBox2.Controls.Add(this.btnRelay2);
             this.groupBox2.Controls.Add(this.btnRelay1);
-            this.groupBox2.Controls.Add(this.btnLoad);
             this.groupBox2.Controls.Add(this.btnStart);
             this.groupBox2.Location = new System.Drawing.Point(13, 13);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(406, 172);
+            this.groupBox2.Size = new System.Drawing.Size(137, 172);
             this.groupBox2.TabIndex = 3;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "CONTROL";
             // 
             // btnFan2
             // 
-            this.btnFan2.Location = new System.Drawing.Point(6, 126);
+            this.btnFan2.Location = new System.Drawing.Point(6, 135);
             this.btnFan2.Name = "btnFan2";
             this.btnFan2.Size = new System.Drawing.Size(75, 23);
             this.btnFan2.TabIndex = 6;
@@ -425,25 +442,16 @@ namespace listView_Test
             // 
             // btnFan1
             // 
-            this.btnFan1.Location = new System.Drawing.Point(6, 97);
+            this.btnFan1.Location = new System.Drawing.Point(6, 106);
             this.btnFan1.Name = "btnFan1";
             this.btnFan1.Size = new System.Drawing.Size(75, 23);
             this.btnFan1.TabIndex = 5;
             this.btnFan1.Text = "Fan 1";
             this.btnFan1.UseVisualStyleBackColor = true;
             // 
-            // btnRelay3
-            // 
-            this.btnRelay3.Location = new System.Drawing.Point(256, 97);
-            this.btnRelay3.Name = "btnRelay3";
-            this.btnRelay3.Size = new System.Drawing.Size(75, 23);
-            this.btnRelay3.TabIndex = 4;
-            this.btnRelay3.Text = "Relay 3";
-            this.btnRelay3.UseVisualStyleBackColor = true;
-            // 
             // btnRelay2
             // 
-            this.btnRelay2.Location = new System.Drawing.Point(256, 68);
+            this.btnRelay2.Location = new System.Drawing.Point(6, 77);
             this.btnRelay2.Name = "btnRelay2";
             this.btnRelay2.Size = new System.Drawing.Size(75, 23);
             this.btnRelay2.TabIndex = 3;
@@ -452,21 +460,12 @@ namespace listView_Test
             // 
             // btnRelay1
             // 
-            this.btnRelay1.Location = new System.Drawing.Point(256, 39);
+            this.btnRelay1.Location = new System.Drawing.Point(6, 48);
             this.btnRelay1.Name = "btnRelay1";
             this.btnRelay1.Size = new System.Drawing.Size(75, 23);
             this.btnRelay1.TabIndex = 2;
             this.btnRelay1.Text = "Relay 1";
             this.btnRelay1.UseVisualStyleBackColor = true;
-            // 
-            // btnLoad
-            // 
-            this.btnLoad.Location = new System.Drawing.Point(6, 48);
-            this.btnLoad.Name = "btnLoad";
-            this.btnLoad.Size = new System.Drawing.Size(75, 23);
-            this.btnLoad.TabIndex = 1;
-            this.btnLoad.Text = "Load";
-            this.btnLoad.UseVisualStyleBackColor = true;
             // 
             // btnStart
             // 
@@ -481,26 +480,135 @@ namespace listView_Test
             // 
             this.Port.BaudRate = 19200;
             this.Port.PortName = "COM4";
+            this.Port.ReceivedBytesThreshold = 135;
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Location = new System.Drawing.Point(425, 22);
+            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBox1.Location = new System.Drawing.Point(635, 13);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(357, 185);
+            this.richTextBox1.Size = new System.Drawing.Size(410, 210);
             this.richTextBox1.TabIndex = 4;
             this.richTextBox1.Text = "";
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.btnChart);
+            this.groupBox3.Location = new System.Drawing.Point(156, 22);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(98, 163);
+            this.groupBox3.TabIndex = 5;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "groupBox3";
+            // 
+            // btnChart
+            // 
+            this.btnChart.Location = new System.Drawing.Point(6, 19);
+            this.btnChart.Name = "btnChart";
+            this.btnChart.Size = new System.Drawing.Size(75, 23);
+            this.btnChart.TabIndex = 0;
+            this.btnChart.Text = "Chart";
+            this.btnChart.UseVisualStyleBackColor = true;
+            this.btnChart.Click += new System.EventHandler(this.btnChart_Click);
+            // 
+            // panel4
+            // 
+            this.panel4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel4.Controls.Add(this.splitContainer1);
+            this.panel4.Controls.Add(this.splitter1);
+            this.panel4.Location = new System.Drawing.Point(405, 244);
+            this.panel4.Name = "panel4";
+            this.panel4.Size = new System.Drawing.Size(650, 238);
+            this.panel4.TabIndex = 7;
+            // 
+            // splitContainer1
+            // 
+            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.splitContainer1.Location = new System.Drawing.Point(3, 0);
+            this.splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.lineChart);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.lineChart1);
+            this.splitContainer1.Size = new System.Drawing.Size(647, 238);
+            this.splitContainer1.SplitterDistance = 337;
+            this.splitContainer1.TabIndex = 1;
+            // 
+            // lineChart
+            // 
+            this.lineChart.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lineChart.LegendTitle = "Legend";
+            this.lineChart.Location = new System.Drawing.Point(0, 0);
+            this.lineChart.Name = "lineChart";
+            this.lineChart.Padding = new System.Windows.Forms.Padding(5);
+            this.lineChart.ShowLegend = true;
+            this.lineChart.Size = new System.Drawing.Size(337, 238);
+            this.lineChart.SubtitleFontName = null;
+            this.lineChart.SubtitleFontSize = null;
+            this.lineChart.SubtitleFontStyle = null;
+            this.lineChart.TabIndex = 0;
+            this.lineChart.Text = "lineChart1";
+            this.lineChart.Theme.UniformSeriesFill = new MindFusion.Drawing.SolidBrush("#FF90EE90");
+            this.lineChart.Theme.UniformSeriesStroke = new MindFusion.Drawing.SolidBrush("#FF000000");
+            this.lineChart.Theme.UniformSeriesStrokeThickness = 2D;
+            this.lineChart.TitleFontName = null;
+            this.lineChart.TitleFontSize = null;
+            this.lineChart.TitleFontStyle = null;
+            this.lineChart.DataItemClicked += new System.EventHandler<MindFusion.Charting.HitResult>(this.lineChart_DataItemClicked_1);
+            // 
+            // lineChart1
+            // 
+            this.lineChart1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lineChart1.LegendTitle = "Legend";
+            this.lineChart1.Location = new System.Drawing.Point(0, 0);
+            this.lineChart1.Name = "lineChart1";
+            this.lineChart1.Padding = new System.Windows.Forms.Padding(5);
+            this.lineChart1.ShowLegend = true;
+            this.lineChart1.Size = new System.Drawing.Size(306, 238);
+            this.lineChart1.SubtitleFontName = null;
+            this.lineChart1.SubtitleFontSize = null;
+            this.lineChart1.SubtitleFontStyle = null;
+            this.lineChart1.TabIndex = 0;
+            this.lineChart1.Text = "lineChart1";
+            this.lineChart1.Theme.UniformSeriesFill = new MindFusion.Drawing.SolidBrush("#FF90EE90");
+            this.lineChart1.Theme.UniformSeriesStroke = new MindFusion.Drawing.SolidBrush("#FF000000");
+            this.lineChart1.Theme.UniformSeriesStrokeThickness = 2D;
+            this.lineChart1.TitleFontName = null;
+            this.lineChart1.TitleFontSize = null;
+            this.lineChart1.TitleFontStyle = null;
+            this.lineChart1.DataItemClicked += new System.EventHandler<MindFusion.Charting.HitResult>(this.lineChart1_DataItemClicked_1);
+            // 
+            // splitter1
+            // 
+            this.splitter1.Location = new System.Drawing.Point(0, 0);
+            this.splitter1.Name = "splitter1";
+            this.splitter1.Size = new System.Drawing.Size(3, 238);
+            this.splitter1.TabIndex = 0;
+            this.splitter1.TabStop = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1057, 489);
+            this.Controls.Add(this.panel4);
             this.Controls.Add(this.richTextBox1);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.CustomTabControl);
             this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.Form1_Load);
             this.CustomTabControl.ResumeLayout(false);
             this.tabBattery.ResumeLayout(false);
@@ -512,6 +620,12 @@ namespace listView_Test
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
+            this.panel4.ResumeLayout(false);
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -552,15 +666,20 @@ namespace listView_Test
         public System.Windows.Forms.GroupBox groupBox2;
         public System.Windows.Forms.Button btnFan2;
         public System.Windows.Forms.Button btnFan1;
-        public System.Windows.Forms.Button btnRelay3;
         public System.Windows.Forms.Button btnRelay2;
         public System.Windows.Forms.Button btnRelay1;
-        public System.Windows.Forms.Button btnLoad;
-        public System.Windows.Forms.Button btnStart;
         public System.IO.Ports.SerialPort Port;
         public System.Windows.Forms.Label label9;
         public System.Windows.Forms.ComboBox cbStop;
         public System.Windows.Forms.RichTextBox richTextBox1;
+        public System.Windows.Forms.Button btnStart;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Button btnChart;
+        private System.Windows.Forms.Panel panel4;
+        private System.Windows.Forms.Splitter splitter1;
+        private System.Windows.Forms.SplitContainer splitContainer1;
+        private MindFusion.Charting.WinForms.LineChart lineChart;
+        private MindFusion.Charting.WinForms.LineChart lineChart1;
     }
 }
 

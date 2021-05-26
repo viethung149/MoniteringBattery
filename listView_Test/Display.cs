@@ -25,7 +25,8 @@ namespace listView_Test
                 arr[0] = battery_data.voltage.ToString();
                 arr[1] = battery_data.temperature.ToString();
                 arr[2] = battery_data.status_balance == true ? "Blancing" : "Not Blancing";
-                arr[3] = battery_data.warning == true ? "Emergency" : "Normal";
+                arr[3] = battery_data.warning_voltage == true ? "Emergency" : "Normal";
+                arr[4] = battery_data.warning_temperature == true ? "Emergency" : "Normal";
                 while (f.CustomListView_Battery.Items[row - 1].SubItems.Count != 1)
                 {
                     f.CustomListView_Battery.Items[row - 1].SubItems.RemoveAt(1);

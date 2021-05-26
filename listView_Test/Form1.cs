@@ -11,12 +11,16 @@ using System.IO.Ports;
 using System.IO;
 using System.Collections;
 using System.Data.OleDb;
-
+using DateTimeSeries;
+using MindFusion.Charting;
+using Brush = MindFusion.Drawing.Brush;
+using SolidBrush = MindFusion.Drawing.SolidBrush;
 namespace listView_Test
 {
-   
+
     public partial class Form1 : Form
     {
+        public static int FLAG_REALTIME_CHART = 0;
         Database access_db = new Database();
         public int INDEX_BATTERY = 1;
         public int INDEX_PACKAGE = 1;
@@ -33,23 +37,25 @@ namespace listView_Test
         // set delegate to handle serial
         delegate void SetTextCallBack(string text);
         // set delegate to handle settable
-        delegate void SetTable(float[] battery_voltage, 
-                               float[] temp, 
-                               bool[] status_voltage, 
-                               bool[] status_temp, 
-                               bool[] status_emer_bar1, 
+        delegate void SetTable(float[] battery_voltage,
+                               float[] temp,
+                               bool[] status_voltage,
+                               bool[] status_temp,
+                               bool[] status_emer_bar1,
                                bool[] status_emer_bar2,
                                int size);
-        
-       
+        public Chart_Form chart_form = new Chart_Form();
+
+
         private void init_listView_battery() {
             Battery init = new Battery();
             init.voltage = (float)0.0;
             init.temperature = (float)0.0;
             init.status_balance = false;
-            init.warning = false;
+            init.warning_voltage = false;
+            init.warning_temperature = false;
             for (int i = 1; i <= 8; i++) {
-                Display.Add_row_data_battery(i, init,this);
+                Display.Add_row_data_battery(i, init, this);
             }
         }
         private void init_listView_package()
@@ -63,7 +69,7 @@ namespace listView_Test
             init.status_active = 0;
             for (int i = 1; i <= Constant.NUMBER_PACKET; i++)
             {
-                Display.Add_row_data_package(i, init,this);
+                Display.Add_row_data_package(i, init, this);
             }
         }
         private void init_listView_pheripheral()
@@ -72,7 +78,7 @@ namespace listView_Test
             init.status_connect = false;
             for (int i = 1; i <= Constant.NUMBER_PHERI; i++)
             {
-                Display.Add_row_data_pheripheral(i, init,this);
+                Display.Add_row_data_pheripheral(i, init, this);
             }
         }
         public Form1()
@@ -101,13 +107,15 @@ namespace listView_Test
             CustomListView_Battery.Columns.Add("Voltage");
             CustomListView_Battery.Columns.Add("Temperater");
             CustomListView_Battery.Columns.Add("Blance status");
-            CustomListView_Battery.Columns.Add("Emergency");
+            CustomListView_Battery.Columns.Add("Warning Voltage");
+            CustomListView_Battery.Columns.Add("Warning Temperature");
+
 
             //ListViewItem item1 = new ListViewItem();
             //item1.Text = "Item1";
             //item1.SubItems.Add(new ListViewItem.ListViewSubItem() { Text = "Sub Item 1" });
-            for (int i = 1; i <= Constant.NUMBER_BATTERY; i++) {
-                CustomListView_Battery.Items.Add("Battery "+ i.ToString() );
+            for (int i = 1; i <= Constant.NUMBER_BATTERY / 2; i++) {
+                CustomListView_Battery.Items.Add("Battery " + i.ToString());
             }
             CustomListView_Battery.View = View.Details;
             CustomListView_Battery.Dock = DockStyle.Fill;
@@ -141,7 +149,7 @@ namespace listView_Test
             CustomListView_Pheripheral.GridLines = true;
             CustomListView_Pheripheral.Columns.Add("Name Pheripheral");
             CustomListView_Pheripheral.Columns.Add("Status");
-      
+
             CustomListView_Pheripheral.Items.Add("Fan 1");
             CustomListView_Pheripheral.Items.Add("Fan 2");
             CustomListView_Pheripheral.Items.Add("Relay package 1");
@@ -160,7 +168,7 @@ namespace listView_Test
             int[] data_size = { 7, 8 };
             cbData.DataSource = data_size;
 
-            string[] parity = { "None", "Even","Odd" };
+            string[] parity = { "None", "Even", "Odd" };
             cbParity.DataSource = parity;
 
             double[] stop_bits = { 1, 1.5, 2 };
@@ -169,7 +177,17 @@ namespace listView_Test
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            System.Windows.Forms.ToolTip toolTip1 = new System.Windows.Forms.ToolTip();
+            // Set up the delays for the ToolTip.
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            // Force the ToolTip text to be displayed whether or not the form is active.
+            toolTip1.ShowAlways = true;
+            // Set up the ToolTip text for the Button and Checkbox.
+            toolTip1.SetToolTip(this.btnChart, "Click here to open chart");
             LoadComboBox_Serial();
+            config_real_time_chart();
         }
 
 
@@ -178,12 +196,12 @@ namespace listView_Test
             //Console.WriteLine("timer check 1");
             Battery test = new Battery();
             Random rand = new Random();
-            test.voltage = (float)rand.NextDouble()*3;
-            test.temperature = (float)rand.NextDouble()*30;
-            test.status_balance  = rand.Next(0,2) > 0 ;
-            test.warning = rand.Next(0, 2) > 0;
-            Display.Add_row_data_battery(INDEX_BATTERY++, test,this);
-            if (INDEX_BATTERY == Constant.NUMBER_BATTERY+1) INDEX_BATTERY = 1;
+            test.voltage = (float)rand.NextDouble() * 3;
+            test.temperature = (float)rand.NextDouble() * 30;
+            test.status_balance = rand.Next(0, 2) > 0;
+            //test.warning = rand.Next(0, 2) > 0;
+            Display.Add_row_data_battery(INDEX_BATTERY++, test, this);
+            if (INDEX_BATTERY == Constant.NUMBER_BATTERY + 1) INDEX_BATTERY = 1;
         }
 
         private void TimerModifPackage_Tick(object sender, EventArgs e)
@@ -196,9 +214,9 @@ namespace listView_Test
             test.current = (float)rand.NextDouble() * 30;
             test.status_balance = rand.Next(0, 2) > 0;
             test.status_connect = rand.Next(0, 2) > 0;
-            test.status_active =  rand.Next(3);
-            Display.Add_row_data_package(INDEX_PACKAGE++, test,this);
-            if (INDEX_PACKAGE == Constant.NUMBER_PACKET+1) INDEX_PACKAGE = 1;
+            test.status_active = rand.Next(3);
+            Display.Add_row_data_package(INDEX_PACKAGE++, test, this);
+            if (INDEX_PACKAGE == Constant.NUMBER_PACKET + 1) INDEX_PACKAGE = 1;
         }
 
         private void timerModifyPheripheral_Tick(object sender, EventArgs e)
@@ -207,8 +225,8 @@ namespace listView_Test
             Peripheral test = new Peripheral();
             Random rand = new Random();
             test.status_connect = rand.Next(0, 2) > 0;
-            Display.Add_row_data_pheripheral(INDEX_PHERI++, test,this);
-            if (INDEX_PHERI == Constant.NUMBER_PHERI+1) INDEX_PHERI = 1;
+            Display.Add_row_data_pheripheral(INDEX_PHERI++, test, this);
+            if (INDEX_PHERI == Constant.NUMBER_PHERI + 1) INDEX_PHERI = 1;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -247,8 +265,10 @@ namespace listView_Test
                 Port.Handshake = Handshake.None;
                 try
                 {
+                    Port.ReceivedBytesThreshold = 1;
                     Port.Open();
                     btnConnectSerial.Text = "Disconnect";
+       
                 }
                 catch (Exception)
                 {
@@ -260,7 +280,7 @@ namespace listView_Test
                 btnConnectSerial.Text = "Connect";
 
             }
-            
+
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
@@ -268,39 +288,99 @@ namespace listView_Test
             var ports = SerialPort.GetPortNames();
             cbComport.DataSource = ports;
         }
+        private int counter = 1;
+        private byte[] buffer_rx = new byte[200];
+        private byte[] data = new byte[135];
+        private int number_byte_read = 0;
+        private bool update = false;
         private void uart_read_even(object sender, SerialDataReceivedEventArgs e)
         {
             byte crc = 0x00;
             int bytes = Port.BytesToRead;
-            // bytes = 8;
-            byte[] buffer_rx = new byte[bytes];
-            Port.Read(buffer_rx, 0, bytes);
-            string content = "number of bytes read is" + bytes.ToString() + ": ";
-            foreach (var item in buffer_rx)
+            byte[] read = new byte[bytes];
+            Port.Read(read, 0, bytes);
+            if (bytes == 0) return;
+            
+            //string 
+            string content = " test ";
+            foreach (var item in read)
             {
-                content += " " + item.ToString("X2"); 
+                if (number_byte_read >= 200) number_byte_read = 0;
+                buffer_rx[number_byte_read] = (byte)item;
+                Console.WriteLine("number: {0} byte {1:X2}", number_byte_read, buffer_rx[number_byte_read]);
+                
+                
+                if (buffer_rx[134] == '\r')
+                {
+                    Array.Copy(buffer_rx, 0, data, 0, 135);
+                    number_byte_read = -1;
+                    Array.Clear(buffer_rx, 0, buffer_rx.Length);
+                    update = true;
+                }
+                else if (buffer_rx[number_byte_read] == '\r' && number_byte_read != 134) {
+                    Console.WriteLine("byte wrong {0:X2} number {1}", buffer_rx[number_byte_read], number_byte_read);
+                    number_byte_read = -1;
+                    Console.WriteLine("Wrong end data");
+                }
+                number_byte_read++;
+                content += " " + ((byte)item).ToString("X2");
             }
-            bool flag = false;
-            if (Data.check_correct_emerPackage( buffer_rx, 
-                                                bytes, 
-                                                ref status_emer_bar1, 
-                                                ref status_emer_bar2, 
-                                                Constant.NUMBER_BATTERY)) {
-                content += "success emer";
-            }
-            if (Data.check_correct_inforPackage(buffer_rx, 
-                                                bytes, 
-                                                ref battery_voltage,
-                                                ref battery_temperature,
-                                                Constant.NUMBER_BATTERY,
-                                                ref status_voltage,
-                                                ref status_temperature,
-                                                Constant.NUMBER_BATTERY)) {
-                                                content += " success infor";
-                SetListView(battery_voltage, battery_temperature, status_voltage, status_temperature, status_emer_bar1, status_emer_bar2, Constant.NUMBER_BATTERY);
+            Console.WriteLine("---------------------------------------------");
+            //Console.WriteLine("in event " + counter.ToString() + content +"with number byte is " +bytes.ToString());
+            counter++;
+
+            // bytes = 8;
+            //byte[] buffer_rx = new byte[bytes];
+            //Port.Read(buffer_rx, 0, bytes);
+            if (update) {
+                update = false;
+                if (data[0] == 'I' || data[0] == 'E')
+                {
+                    int number_bytes = data.Length;
+                    string content1 = "number of bytes read is" + data.Length.ToString() + ": ";
+                    foreach (var item in data)
+                    {
+                        content1 += " " + item.ToString("X2");
+                    }
+                    if (Data.check_correct_emerPackage(data,
+                                                        number_bytes,
+                                                        ref status_emer_bar1,
+                                                        ref status_emer_bar2,
+                                                        Constant.NUMBER_BATTERY))
+                    {
+                        content1 += "success emer";
+                    }
+                    else if (Data.check_correct_inforPackage(data,
+                                                        number_bytes,
+                                                        ref battery_voltage,
+                                                        ref battery_temperature,
+                                                        Constant.NUMBER_BATTERY,
+                                                        ref status_voltage,
+                                                        ref status_temperature,
+                                                        Constant.NUMBER_BATTERY))
+                    {
+                        content1 += " success infor";
+                        if (FLAG_REALTIME_CHART == 1)
+                        {
+                            // adding data to chart form
+                            Data_chart.add_point("Battery Voltage", 100, 100, chart_form);
+                        }
+                        SetListView(battery_voltage, battery_temperature, status_voltage, status_temperature, status_emer_bar1, status_emer_bar2, Constant.NUMBER_BATTERY);
+                        SetRealTimeChart(battery_voltage, battery_temperature, Constant.NUMBER_BATTERY);
+                    }
+
+                    //Port.DiscardInBuffer();
+                    SetText(content1);
+
+                }
+                else
+                {
+
+                    Port.DiscardInBuffer();
+                    return;
+                }
             }
 
-            SetText(content); 
         }
         public void SetText(string text)
         {
@@ -317,7 +397,7 @@ namespace listView_Test
 
         }
 
-        void SetListView(float[] battery_voltage,
+        public void SetListView(float[] battery_voltage,
                          float[] temperature,
                          bool[] status_voltage,
                          bool[] status_temperature,
@@ -332,18 +412,196 @@ namespace listView_Test
             }
             else
             {
-                for (int i = 0; i < size; i++)
+                for (int i = 0; i < size / 2; i++)
                 {
                     Battery temp = new Battery();
                     temp.voltage = battery_voltage[i];
                     temp.temperature = temperature[i];
-                    temp.status_balance = status_temperature[i];
-                    temp.warning = status_emer_bar2[i];
-                    Display.Add_row_data_battery(i + 1, temp,this);
+                    temp.status_balance = false;
+                    temp.warning_voltage = status_voltage[i];
+                    temp.warning_temperature = status_temperature[i];
+                    Display.Add_row_data_battery(i + 1, temp, this);
                     access_db.insert_battery("Battery", temp, i + 1);
                 }
             }
 
+        }
+
+        private void btnChart_Click(object sender, EventArgs e)
+        {
+            FLAG_REALTIME_CHART = 1;
+            Console.WriteLine(FLAG_REALTIME_CHART);
+            chart_form.WindowState = FormWindowState.Normal;
+            chart_form.Show();
+        }
+        // config
+        MyDateTimeSeries series1, series2, series3, series4;
+
+        private System.Windows.Forms.ToolTip tooltip = new System.Windows.Forms.ToolTip();
+
+
+        private void lineChart1_DataItemClicked_1(object sender, HitResult e)
+        {
+            tooltip.RemoveAll();
+            double Value = e.Value;
+            int index = e.Index;
+            long time = series1.dates[index];
+            DateTime dt = new DateTime(time);
+            Console.WriteLine("voltage is {0} time is {1}", Value, dt.ToString());
+            string infor = Value.ToString("0.000") + " at " + dt.ToString("HH:mm");
+            tooltip.AutoPopDelay = 5000;
+            tooltip.Show(infor, lineChart);
+        }
+
+        private void lineChart_DataItemClicked_1(object sender, HitResult e)
+        {
+            tooltip.RemoveAll();
+            double Value = e.Value;
+            int index = e.Index;
+            long time = series1.dates[index];
+            DateTime dt = new DateTime(time);
+            Console.WriteLine("voltage is {0} time is {1}", Value, dt.ToString());
+            string infor = Value.ToString("0.000") + " at " + dt.ToString("HH:mm");
+            tooltip.AutoPopDelay = 5000;
+            tooltip.Show(infor, lineChart);
+        }
+
+
+        private void config_real_time_chart() {
+
+            series1 = new MyDateTimeSeries(DateTime.Now, DateTime.Now, DateTime.Now.AddMinutes(1));
+            series1.DateTimeFormat = DateTimeFormat.LongTime;
+            series1.LabelInterval = 1;
+            series1.MinValue = 0;
+            series1.MaxValue = 120;
+            series1.Title = "Voltage Package 1";
+            series1.SupportedLabels = LabelKinds.XAxisLabel;
+
+            series2 = new MyDateTimeSeries(DateTime.Now, DateTime.Now, DateTime.Now.AddMinutes(1));
+            series2.DateTimeFormat = DateTimeFormat.LongTime;
+            series2.LabelInterval = 1;
+            series2.MinValue = 0;
+            series2.MaxValue = 120;
+            series2.Title = "Temperature Package 1";
+
+            series3 = new MyDateTimeSeries(DateTime.Now, DateTime.Now, DateTime.Now.AddMinutes(1));
+            series3.DateTimeFormat = DateTimeFormat.LongTime;
+            series3.LabelInterval = 1;
+            series3.MinValue = 0;
+            series3.MaxValue = 120;
+            series3.Title = "Voltage Package 1";
+            series3.SupportedLabels = LabelKinds.XAxisLabel;
+
+            series4 = new MyDateTimeSeries(DateTime.Now, DateTime.Now, DateTime.Now.AddMinutes(1));
+            series4.DateTimeFormat = DateTimeFormat.LongTime;
+            series4.LabelInterval = 1;
+            series4.MinValue = 0;
+            series4.MaxValue = 120;
+            series4.Title = "Temperature Package 2";
+            series4.SupportedLabels = LabelKinds.None;
+            // setup chart
+            lineChart.Series.Add(series1);
+            lineChart.Series.Add(series2);
+            lineChart1.Series.Add(series3);
+            lineChart1.Series.Add(series4);
+            // config Chart 1
+            lineChart.Title = "Package 1";
+            lineChart.ShowXCoordinates = false;
+            lineChart.ShowLegendTitle = false;
+            lineChart.LayoutPanel.Margin = new Margins(20, 20, 20, 20);
+
+            lineChart.XAxis.Title = "Time";
+            lineChart.XAxis.MinValue = 0;
+            lineChart.XAxis.MaxValue = 120;
+            lineChart.XAxis.Interval = 20;
+
+            lineChart.YAxis.MinValue = 0;
+            lineChart.YAxis.MaxValue = 120;
+            lineChart.YAxis.Interval = 10;
+            lineChart.YAxis.Title = "Voltage(V)\n Temperature(C)";
+            List<Brush> brushes = new List<Brush>()
+            {
+                new SolidBrush(Color.Blue),
+                new SolidBrush(Color.Orange),
+            };
+
+            List<double> thicknesses = new List<double>() { 2 };
+            PerSeriesStyle style = new PerSeriesStyle(brushes, brushes, thicknesses, null);
+            lineChart.AllowZoom = true;
+            lineChart.LineType = LineType.Curve;
+            lineChart.Plot.SeriesStyle = style;
+            lineChart.Theme.PlotBackground = new SolidBrush(Color.White);
+            lineChart.Theme.GridLineColor = Color.LightGray;
+            lineChart.Theme.GridLineStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+            lineChart.TitleMargin = new Margins(10);
+            lineChart.GridType = GridType.Horizontal;
+            // config Chart 2
+            lineChart1.Title = "Package 2";
+            lineChart1.ShowXCoordinates = false;
+            lineChart1.ShowLegendTitle = false;
+            lineChart1.LayoutPanel.Margin = new Margins(20, 20, 20, 20);
+                     
+            lineChart1.XAxis.Title = "Time";
+            lineChart1.XAxis.MinValue = 0;
+            lineChart1.XAxis.MaxValue = 120;
+            lineChart1.XAxis.Interval = 20;
+                     
+            lineChart1.YAxis.MinValue = 0;
+            lineChart1.YAxis.MaxValue = 120;
+            lineChart1.YAxis.Interval = 10;
+            lineChart1.YAxis.Title = "Voltage(V)\n Temperature(C)";
+            lineChart1.AllowZoom = true;
+            lineChart1.LineType = LineType.Curve;
+            lineChart1.Plot.SeriesStyle = style;
+            lineChart1.Theme.PlotBackground = new SolidBrush(Color.White);
+            lineChart1.Theme.GridLineColor = Color.LightGray;
+            lineChart1.Theme.GridLineStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+            lineChart1.TitleMargin = new Margins(10);
+            lineChart1.GridType = GridType.Horizontal;
+
+
+        }
+        private void SetRealTimeChart(float[] battery_voltage, float[] battery_temperature, int size_battery) {
+            float Voltage_P1 = 0;
+            float Voltage_P2 = 0;
+            float Temperature_P1 = 0;
+            float Temperature_P2 = 0;
+            Voltage_P1 = battery_voltage[0] + battery_voltage[1] + battery_voltage[2] + battery_voltage[3];
+            Voltage_P2 = battery_voltage[4] + battery_voltage[5] + battery_voltage[6] + battery_voltage[7];
+            Temperature_P1 = (battery_temperature[0] + battery_temperature[1] + battery_temperature[2] + battery_temperature[3])/4;
+            Temperature_P2 = (battery_temperature[4] + battery_temperature[5] + battery_temperature[6] + battery_temperature[7])/4;
+            series1.addValue(Voltage_P1, DateTime.Now);
+            series2.addValue(Temperature_P1, DateTime.Now);
+            series3.addValue(Voltage_P2, DateTime.Now);
+            series4.addValue(Temperature_P2, DateTime.Now);
+            //series2.addValue(buffer_temperature[i], buffer_datetime[i]);
+            if (series1.Size >= 1)
+            {
+                double currVal = series1.GetValue(series1.Size - 1, 0);
+
+                if (currVal > lineChart.XAxis.MaxValue)
+                {
+                    double span = currVal - series1.GetValue(series1.Size - 2, 0);
+                    lineChart.XAxis.MinValue += span;
+                    lineChart.XAxis.MaxValue += span;
+
+                }
+                lineChart.ChartPanel.InvalidateLayout();
+
+            }
+            if (series3.Size >= 1)
+            {
+                double currVal = series3.GetValue(series3.Size - 1, 0);
+
+                if (currVal > lineChart1.XAxis.MaxValue)
+                {
+                    double span = currVal - series3.GetValue(series3.Size - 2, 0);
+                    lineChart1.XAxis.MinValue += span;
+                    lineChart1.XAxis.MaxValue += span;
+                }
+                lineChart1.ChartPanel.InvalidateLayout();
+
+            }
         }
     }
 }

@@ -25,7 +25,7 @@ namespace listView_Test
             {
                 
                 Conn.Open();
-                MessageBox.Show("connect database success");
+                Console.WriteLine("connect database success");
             }
             catch (Exception ex)
             {
@@ -33,26 +33,31 @@ namespace listView_Test
             }
         }
         public bool insert_battery(string TableName, Battery battery_infor,int ID_battery) {
-            OleDbCommand command = new OleDbCommand();
-            command.CommandType = CommandType.Text;
-            command.Connection = Conn;
-            command.CommandText = "insert into "+TableName+ " values(@IDbattery,@Voltage,@Temperature,@Balance,@Time)";
-            command.Parameters.Add("@IDbattery", OleDbType.Integer).Value = ID_battery;
-            command.Parameters.Add("@Voltage", OleDbType.Double).Value = battery_infor.voltage;
-            command.Parameters.Add("@Temperature", OleDbType.Double).Value = battery_infor.temperature;
-            command.Parameters.Add("@Balance", OleDbType.WChar).Value = battery_infor.status_balance.ToString();
-            command.Parameters.Add("@Time", OleDbType.WChar).Value = DateTime.Now.ToString("yyyy:MM:dd hh:mm:ss");
-            int result = command.ExecuteNonQuery();
-            if (result > 0)
-            {
-                Console.WriteLine("insert battery infor to database success");
-                return true;
+            if (ID_battery <= 8) { 
+                OleDbCommand command = new OleDbCommand();
+                command.CommandType = CommandType.Text;
+                command.Connection = Conn;
+                command.CommandText = "insert into " + TableName + " values(@IDbattery,@Voltage,@Temperature,@Balance,@error_voltage,@error_temperature,@Time)";
+                command.Parameters.Add("@IDbattery", OleDbType.Integer).Value = ID_battery;
+                command.Parameters.Add("@Voltage", OleDbType.Double).Value = battery_infor.voltage;
+                command.Parameters.Add("@Temperature", OleDbType.Double).Value = battery_infor.temperature;
+                command.Parameters.Add("@Balance", OleDbType.Boolean).Value = battery_infor.status_balance;
+                command.Parameters.Add("@error_voltage", OleDbType.WChar).Value = battery_infor.warning_voltage.ToString();
+                command.Parameters.Add("@error_temperature", OleDbType.WChar).Value = battery_infor.warning_temperature.ToString();
+                command.Parameters.Add("@Time", OleDbType.WChar).Value = DateTime.Now.ToString("yyyy:MM:dd hh:mm:ss");
+                int result = command.ExecuteNonQuery();
+                if (result > 0)
+                {
+                    Console.WriteLine("insert battery infor to database success");
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("insert battery infor fail");
+                    return false;
+                }
             }
-            else
-            {
-                Console.WriteLine("insert battery infor fail");
-                return false;
-            }
+            return true;  
         }
         public bool insert_package(string TableName, Package package_infor, string namepackage)
         {

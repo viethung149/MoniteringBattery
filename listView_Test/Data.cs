@@ -17,7 +17,7 @@ namespace listView_Test
                                 ref bool[] status_voltage,
                                 int size_status)
         {
-            if (buffer[0] == 'I')
+            if ( size_buffer == 135 && buffer[0] == 'I')
             {
                 byte _crc = 0x00;
                 for (int i = 0; i < 133; i++) { _crc += buffer[i]; }
@@ -32,11 +32,11 @@ namespace listView_Test
                     }
                     for (int i = 0; i < size_data; i++)
                     {
-                        battery_voltage[i] = float_data[i];
+                        temperature[i] = float_data[i];
                     }
                     for (int i = 0; i < size_data; i++)
                     {
-                        temperature[i] = float_data[i + 16];
+                        battery_voltage[i] = float_data[i + size_data];
                     }
                     ByteArrayToBool(new Byte[] { buffer[129], buffer[130] }, 2, ref status_battery, 2 * 8);
                     ByteArrayToBool(new Byte[] { buffer[131], buffer[132] }, 2, ref status_voltage, 2 * 8);
@@ -53,11 +53,11 @@ namespace listView_Test
                                               ref bool[] emer_bar_2,
                                               int size_bar)
         {
-            if (buffer[0] == 'E')
+            if (size_buffer == 135 && buffer[0] == 'E' )
             {
                 byte _crc = 0x00;
                 for (int i = 0; i < 5; i++) { _crc += buffer[i]; }
-                if (_crc == buffer[5] && buffer[6] == '\r')
+                if (_crc == buffer[5] && buffer[134] == '\r')
                 {
                     ByteArrayToBool(new Byte[] { buffer[1], buffer[2] }, 2, ref emer_bar_1, size_bar);
                     ByteArrayToBool(new Byte[] { buffer[3], buffer[4] }, 2, ref emer_bar_2, size_bar);

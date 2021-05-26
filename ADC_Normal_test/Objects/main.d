@@ -45,3 +45,5 @@
 .\objects\main.o: exti.h
 .\objects\main.o: status.h
 .\objects\main.o: package_data.h
+.\objects\main.o: spi.h
+.\objects\main.o: spi.h

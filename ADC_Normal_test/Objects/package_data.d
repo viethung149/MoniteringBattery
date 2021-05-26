@@ -37,4 +37,9 @@
 .\objects\package_data.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dcmi.h
 .\objects\package_data.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
 .\objects\package_data.o: type.h
+.\objects\package_data.o: spi.h
+.\objects\package_data.o: spi.h
+.\objects\package_data.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 .\objects\package_data.o: uart.h
+.\objects\package_data.o: delay.h
+.\objects\package_data.o: system_timetick.h

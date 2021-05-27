@@ -42,8 +42,8 @@ namespace listView_Test
                 command.Parameters.Add("@Voltage", OleDbType.Double).Value = battery_infor.voltage;
                 command.Parameters.Add("@Temperature", OleDbType.Double).Value = battery_infor.temperature;
                 command.Parameters.Add("@Balance", OleDbType.Boolean).Value = battery_infor.status_balance;
-                command.Parameters.Add("@error_voltage", OleDbType.WChar).Value = battery_infor.warning_voltage.ToString();
-                command.Parameters.Add("@error_temperature", OleDbType.WChar).Value = battery_infor.warning_temperature.ToString();
+                command.Parameters.Add("@error_voltage", OleDbType.Boolean).Value = battery_infor.warning_voltage;
+                command.Parameters.Add("@error_temperature", OleDbType.Boolean).Value = battery_infor.warning_temperature;
                 command.Parameters.Add("@Time", OleDbType.WChar).Value = DateTime.Now.ToString("yyyy:MM:dd hh:mm:ss");
                 int result = command.ExecuteNonQuery();
                 if (result > 0)
@@ -64,18 +64,19 @@ namespace listView_Test
             OleDbCommand command = new OleDbCommand();
             command.CommandType = CommandType.Text;
             command.Connection = Conn;
-            command.CommandText = "insert into " + TableName + " values(@NamePackage,@Capacity,@Temperature,@Balance,@LoadCharge,@ConnectDisconnect,@Time)";
+            command.CommandText = "insert into " + TableName + " values(@NamePackage,@Capacity,@Temperature,@Current,@Balance,@Status,@Warning,@Time)";
             command.Parameters.Add("@NamePackage", OleDbType.WChar).Value = namepackage;
             command.Parameters.Add("@Capacity", OleDbType.Double).Value = package_infor.capacity;
             command.Parameters.Add("@Temperature", OleDbType.Double).Value = package_infor.temperater;
-            command.Parameters.Add("@Balance", OleDbType.WChar).Value = package_infor.status_balance.ToString();
-            command.Parameters.Add("@LoadCharge", OleDbType.WChar).Value = package_infor.status_active.ToString();
-            command.Parameters.Add("@ConnectDisconnect", OleDbType.WChar).Value = package_infor.status_connect.ToString();
+            command.Parameters.Add("@Current", OleDbType.Double).Value = package_infor.current;
+            command.Parameters.Add("@Balance", OleDbType.Boolean).Value = package_infor.status_balance;
+            command.Parameters.Add("@Status", OleDbType.WChar).Value = package_infor.status_connect.ToString();
+            command.Parameters.Add("@Warning", OleDbType.Boolean).Value = package_infor.warning;
             command.Parameters.Add("@Time", OleDbType.WChar).Value = DateTime.Now.ToString("yyyy:MM:dd hh:mm:ss");
             int result = command.ExecuteNonQuery();
             if (result > 0)
             {
-                Console.WriteLine("insert package infor to database success");
+                Console.WriteLine("insert package package to database success");
                 return true;
             }
             else

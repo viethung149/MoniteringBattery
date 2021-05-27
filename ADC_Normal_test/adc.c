@@ -133,6 +133,7 @@ float ADC_get_voltage_from_channel(ADC_TypeDef* ADCx, int numberRead, int channe
 {
 	ADC_select_channel(module,channel);
 	module == 1 ? GPIO_ResetBits(PORT_MODULE1,PIN_SELECT_MODULE1[0]):GPIO_ResetBits(PORT_MODULE2,PIN_SELECT_MODULE2[0]); 
+	Dellay_us(1000);
 	float voltage = ADC_get_value_voltage(ADCx,numberRead,voltage_ref);
 	module == 1 ? GPIO_SetBits(PORT_MODULE1,PIN_SELECT_MODULE1[0]):GPIO_SetBits(PORT_MODULE2,PIN_SELECT_MODULE2[0]); 
 	return voltage;
@@ -154,4 +155,25 @@ float ADC_get_voltage_from_channel_mv(ADC_TypeDef* ADCx, int numberRead, int cha
 	float voltage = ADC_get_value_voltage_mv(ADCx,numberRead,voltage_ref);
 	module == 1 ? GPIO_SetBits(PORT_MODULE1,PIN_SELECT_MODULE1[0]):GPIO_SetBits(PORT_MODULE2,PIN_SELECT_MODULE2[0]); 
 	return voltage;
+}
+//--convert voltage to current
+float voltage_to_current(float sensitive, float voltage, int offset, Status channel_current_IO){
+	int voltage_mv =voltage*1000;
+	int denta = voltage_mv - offset;
+	float current_a =0;
+	// current out
+	if(denta > 0 && denta > 10){
+		channel_current_IO = ON;
+		current_a = (float)denta/(float)sensitive;
+		return current_a;
+	}
+	// current in 
+	else if(denta <0 && denta < -10){
+		channel_current_IO = OFF;
+		current_a = ((float)denta/sensitive);
+		return current_a;
+	}
+	else{
+		return 0;
+	}
 }

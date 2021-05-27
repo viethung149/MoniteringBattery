@@ -37,3 +37,21 @@ void Dellay_us(uint16_t period){
   	TIM6->CR1 = 0;		// stop Timer6
   	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, DISABLE);
 }
+
+void Dellay_ms_timer4(int time){
+
+  	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
+  	TIM4->PSC = 4799;		// clk = SystemCoreClock /2/(PSC+1) = 1MHz
+	  int arr = 20*time;
+  	TIM4->ARR = arr-1;
+  	TIM4->CNT = 0;
+  	TIM4->EGR = 1;		// update registers;
+			 
+  	TIM4->SR  = 0;		// clear overflow flag
+  	TIM4->CR1 = 1;		// enable Timer4
+
+  	while (!TIM4->SR);
+    
+  	TIM4->CR1 = 0;		// stop Timer6
+  	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, DISABLE);
+}

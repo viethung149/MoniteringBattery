@@ -5,10 +5,19 @@
 #include "spi.h"
 #include "uart.h"
 #include "delay.h"
+#include "adc.h"
 extern BYTE buffer_tx_uart[];
 extern BYTE buffer_tx_spi[];
+
 extern float voltage_module1[];
 extern float voltage_module2[];
+extern float current_voltage[];
+extern float current_a[];
+
+extern Status CHANNEL_15_IO;
+extern Status CHANNEL_14_IO;
+extern Status CHANNEL_13_IO;
+
 extern B_Voltage_status Flag_battery[];
 extern B_Voltage_status Flag_temp[];
 extern Status Flag_pheripheral[];
@@ -97,4 +106,6 @@ void set_emer_flag(float* battery_voltage,
 void package_infor_spi();
 void package_human_spi();
 void package_emer_spi();
+void set_flag(B_Voltage_status Flag[], int index , Style what,float value);
+void get_current(float current_voltage[],float current_a[]);
 #endif

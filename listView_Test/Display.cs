@@ -48,8 +48,11 @@ namespace listView_Test
                 arr[1] = package.temperater.ToString();
                 arr[2] = package.current.ToString();
                 arr[3] = package.status_balance == true ? "Blancing" : "Not Blancing";
-                arr[4] = package.status_connect == true ? "Connect" : "Disconnect";
-                arr[5] = package.status_active == 0 ? "Disconnect" : ((package.status_active == 1) ? "Load" : "Charge");
+                if (package.status_connect == 0) { arr[4] = "Disconnect"; }
+                else if (package.status_connect == 1) { arr[4] = "Connect"; }
+                else if (package.status_connect == 2) { arr[4] = "Charge"; }
+                else if (package.status_connect == 3) { arr[4] = "Discharge"; }
+                arr[5] = package.warning == true ? "Emergency" : "Normal";
                 while (f.CustomListView_Package.Items[row - 1].SubItems.Count != 1)
                 {
                     f.CustomListView_Package.Items[row - 1].SubItems.RemoveAt(1);

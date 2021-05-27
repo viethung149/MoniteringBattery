@@ -10,6 +10,12 @@ typedef enum
   OFF = 0,
   ON
 }Status;
+
+typedef enum
+{
+	VOLTAGE =0,
+	TEMPERATURE
+}Style;
 //-- define status of battery voltage
 typedef enum
 {
@@ -31,10 +37,22 @@ union floatToByte
 	char varialbeByte[4];
 };
 //------------------- constant value ----------------------
-#define VOLTAGE_REF 2.95
+#define VOLTAGE_REF 2.9965
 #define NUMBER_READ 100
-#define SENSITIVE_CURRENT_1 105
 #define VOLTAGE_CURRENT_OFFSET 2500
+//-------------------- current measure------------------------------
+#define CURRENT_MAX_DISCHARGE 3
+#define CURRENT_MAX_CHARGE 1
+#define SIZE_CURRENT 3
+#define CHANNEL_CURRENT_1 13
+#define CHANNEL_CURRENT_2 14
+#define CHANNEL_CURRENT_3 15
+#define CHANNEL_15      1.9855
+#define CHANNEL_14      1.962
+#define CHANNEL_13      2.0
+#define SENSITIVE_15    110.42857
+#define SENSITIVE_14    118
+#define SENSITIVE_13    100
 //---------------------- define select pin-----------------------
 #define MODULE1 				1
 #define PORT_MODULE1     GPIOD 
@@ -105,12 +123,10 @@ union floatToByte
 #define SIZE_BUFFER_RX     1000
 //---------------------- pheripheral --------------------------------
 #define SIZE_PHERIPHERAL 16
-#define START_STOP  0
-#define LOAD_CHARGE 1
-#define RELAY_1     2
-#define RELAY_2     3
-#define FAN_1       5
-#define FAN_2       6
+#define RELAY_1     0
+#define RELAY_2     1
+#define FAN_1       2
+#define FAN_2       3
 //---------------------- error ---------------------------------------
 #define SIZE_EMER 32
 #define EMER_VOLTAGE_B1 0

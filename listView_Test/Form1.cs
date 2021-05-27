@@ -28,22 +28,29 @@ namespace listView_Test
         public static float[] battery_voltage = new float[Constant.NUMBER_BATTERY];
         private float[] battery_temperature = new float[Constant.NUMBER_BATTERY];
         // notify over voltage or temperature
-        private bool[] status_voltage = new bool[Constant.NUMBER_BATTERY];
-        private bool[] status_temperature = new bool[Constant.NUMBER_BATTERY];
+        private bool[] status_adding = new bool[Constant.NUMBER_BATTERY];
+        private bool[] status_battery = new bool[Constant.NUMBER_BATTERY];
         // notify over temperature
         private bool[] status_emer_bar1 = new bool[Constant.NUMBER_BATTERY];
         private bool[] status_emer_bar2 = new bool[Constant.NUMBER_BATTERY];
-
+        // notify the status of peripheral
+        private bool[] status_peripheral = new bool[Constant.NUMBER_PHERI];
         // set delegate to handle serial
         delegate void SetTextCallBack(string text);
-        // set delegate to handle settable
-        delegate void SetTable(float[] battery_voltage,
+        // set delegate to handle settable infor
+        delegate void SetTable_battery(float[] battery_voltage,
                                float[] temp,
-                               bool[] status_voltage,
+                               bool[] status_adding,
                                bool[] status_temp,
                                bool[] status_emer_bar1,
                                bool[] status_emer_bar2,
                                int size);
+        // set deletage to handle settble package
+        delegate void SetTable_package(float[] battery_voltage,
+                              float[] temp,
+                              bool[] status_battery,
+                              bool[] status_peripheral,
+                              int size);
         public Chart_Form chart_form = new Chart_Form();
 
 
@@ -65,8 +72,8 @@ namespace listView_Test
             init.temperater = (float)0.0;
             init.current = (float)0.0;
             init.status_balance = false;
-            init.status_connect = false;
-            init.status_active = 0;
+            init.status_connect = 0;
+            init.warning = false;
             for (int i = 1; i <= Constant.NUMBER_PACKET; i++)
             {
                 Display.Add_row_data_package(i, init, this);
@@ -132,12 +139,12 @@ namespace listView_Test
             CustomListView_Package.Columns.Add("Capacity");
             CustomListView_Package.Columns.Add("Temperater");
             CustomListView_Package.Columns.Add("Current");
-            CustomListView_Package.Columns.Add("Status balance");
-            CustomListView_Package.Columns.Add("Status connect");
-            CustomListView_Package.Columns.Add("Status active");
-            CustomListView_Package.Items.Add("All system");
+            CustomListView_Package.Columns.Add("Balance");
+            CustomListView_Package.Columns.Add("Connect");
+            CustomListView_Package.Columns.Add("Warning");
             CustomListView_Package.Items.Add("Package 1");
             CustomListView_Package.Items.Add("Package 2");
+            CustomListView_Package.Items.Add("All system");
         }
         void LoadListView_Pheripheral()
         {
@@ -206,17 +213,17 @@ namespace listView_Test
 
         private void TimerModifPackage_Tick(object sender, EventArgs e)
         {
-            //Console.WriteLine("timer check  2");
-            Package test = new Package();
-            Random rand = new Random();
-            test.capacity = (float)rand.NextDouble() * 3;
-            test.temperater = (float)rand.NextDouble() * 30;
-            test.current = (float)rand.NextDouble() * 30;
-            test.status_balance = rand.Next(0, 2) > 0;
-            test.status_connect = rand.Next(0, 2) > 0;
-            test.status_active = rand.Next(3);
-            Display.Add_row_data_package(INDEX_PACKAGE++, test, this);
-            if (INDEX_PACKAGE == Constant.NUMBER_PACKET + 1) INDEX_PACKAGE = 1;
+        //    //Console.WriteLine("timer check  2");
+        //    Package test = new Package();
+        //    Random rand = new Random();
+        //    test.capacity = (float)rand.NextDouble() * 3;
+        //    test.temperater = (float)rand.NextDouble() * 30;
+        //    test.current = (float)rand.NextDouble() * 30;
+        //    test.status_balance = rand.Next(0, 2) > 0;
+        //    test.status_connect = rand.Next(0, 2) > 0;
+        //    test.status_active = rand.Next(3);
+        //    Display.Add_row_data_package(INDEX_PACKAGE++, test, this);
+        //    if (INDEX_PACKAGE == Constant.NUMBER_PACKET + 1) INDEX_PACKAGE = 1;
         }
 
         private void timerModifyPheripheral_Tick(object sender, EventArgs e)
@@ -355,8 +362,8 @@ namespace listView_Test
                                                         ref battery_voltage,
                                                         ref battery_temperature,
                                                         Constant.NUMBER_BATTERY,
-                                                        ref status_voltage,
-                                                        ref status_temperature,
+                                                        ref status_battery,
+                                                        ref status_adding,
                                                         Constant.NUMBER_BATTERY))
                     {
                         content1 += " success infor";
@@ -365,7 +372,8 @@ namespace listView_Test
                             // adding data to chart form
                             Data_chart.add_point("Battery Voltage", 100, 100, chart_form);
                         }
-                        SetListView(battery_voltage, battery_temperature, status_voltage, status_temperature, status_emer_bar1, status_emer_bar2, Constant.NUMBER_BATTERY);
+                        SetListView_Infor(battery_voltage, battery_temperature, status_battery, status_adding, status_emer_bar1, status_emer_bar2, Constant.NUMBER_BATTERY);
+                        SetListView_Pakage(battery_voltage, battery_temperature, status_battery, status_peripheral ,Constant.NUMBER_BATTERY);
                         SetRealTimeChart(battery_voltage, battery_temperature, Constant.NUMBER_BATTERY);
                     }
 
@@ -397,18 +405,18 @@ namespace listView_Test
 
         }
 
-        public void SetListView(float[] battery_voltage,
+        public void SetListView_Infor(float[] battery_voltage,
                          float[] temperature,
-                         bool[] status_voltage,
-                         bool[] status_temperature,
+                         bool[] status_battery,
+                         bool[] status_adding,
                          bool[] status_emer_bar1,
                          bool[] status_emer_bar2,
                          int size)
         {
             if (this.CustomListView_Battery.InvokeRequired)
             {
-                SetTable d = new SetTable(SetListView);
-                this.Invoke(d, battery_voltage, temperature, status_voltage, status_temperature, status_emer_bar1, status_emer_bar2, 16);
+                SetTable_battery d = new SetTable_battery(SetListView_Infor);
+                this.Invoke(d, battery_voltage, temperature, status_battery, status_adding, status_emer_bar1, status_emer_bar2, 16);
             }
             else
             {
@@ -416,17 +424,99 @@ namespace listView_Test
                 {
                     Battery temp = new Battery();
                     temp.voltage = battery_voltage[i];
-                    temp.temperature = temperature[i];
+                    temp.temperature = battery_temperature[i];
                     temp.status_balance = false;
-                    temp.warning_voltage = status_voltage[i];
-                    temp.warning_temperature = status_temperature[i];
+                    temp.warning_temperature = status_battery[i];
+                    temp.warning_voltage = status_battery[i+8];
                     Display.Add_row_data_battery(i + 1, temp, this);
                     access_db.insert_battery("Battery", temp, i + 1);
                 }
             }
 
         }
+        public void SetListView_Pakage(float[] battery_voltage,
+                         float[] temperature,
+                         bool[] status_battery,
+                         bool[] status_peripheral,
+                         int size)
+        {
+            if (this.CustomListView_Battery.InvokeRequired)
+            {
+                SetTable_package d = new SetTable_package(SetListView_Pakage);
+                this.Invoke(d, battery_voltage, temperature, status_battery, status_peripheral, size);
+            }
+            else
+            {
+                bool status_package_1 = false;
+                bool status_package_2= false;
+                bool status_temperature_package_1 = false;
+                bool status_voltage_package_1 = false;
+                bool status_temperature_package_2= false;
+                bool status_voltage_package_2= false;
+                bool FAN_1 = status_peripheral[0];
+                bool FAN_2 = status_peripheral[1];
+                bool PACKAGE_1 = status_peripheral[2];
+                bool PACKAGE_2 = status_peripheral[3];
+                for (int i = 0; i < 4; i++) {
+                    status_temperature_package_1 |= status_battery[i];
+                    status_voltage_package_1 |= status_battery[i + 8];
+                };
+                for (int i = 4; i < 8; i++)
+                {
+                    status_temperature_package_2 |= status_battery[i];
+                    status_voltage_package_2 |= status_battery[i + 8];
+                };
+                status_package_1 = status_temperature_package_1 | status_voltage_package_1;
+                status_package_2 = status_temperature_package_2 | status_voltage_package_2;
 
+                Package row1 = new Package();
+                row1.capacity = battery_voltage[0] + battery_voltage[1] + battery_voltage[2] + battery_voltage[3];
+                row1.current = battery_temperature[8];
+                // if current < 0 discharge current>0 charge (dong duong khi sac dong am khi xa)
+                row1.temperater = (battery_temperature[0] + battery_temperature[1] + battery_temperature[2] + battery_temperature[3])/4;
+                row1.warning = status_package_1;
+                row1.status_balance = false;
+                if (PACKAGE_1 == true && row1.current > 0) { row1.status_connect = 2; }//charge
+                else if (PACKAGE_1 == true && row1.current < 0) { row1.status_connect = 3; }//discharge
+                else if (PACKAGE_1 == true && row1.current == 0) { row1.status_connect = 1; }//discharge
+                else { row1.status_connect = 0; } //disconnect 
+                Display.Add_row_data_package(1, row1, this);
+                access_db.insert_package("Package", row1, "Package 1");
+                Package row2 = new Package();
+                row2.capacity = battery_voltage[4] + battery_voltage[5] + battery_voltage[6] + battery_voltage[7];
+                row2.current = battery_temperature[9];
+                // if current < 0 discharge current>0 charge (dong duong khi sac dong am khi xa)
+                row2.temperater = (battery_temperature[4] + battery_temperature[5] + battery_temperature[6] + battery_temperature[7])/4;
+                row2.warning = status_package_2;
+                row2.status_balance = false;
+                if (PACKAGE_2 == true && row2.current > 0) { row2.status_connect = 2; }//charge
+                else if (PACKAGE_2 == true && row2.current < 0) { row2.status_connect = 3; }//discharge
+                else if (PACKAGE_2 == true && row2.current == 0) { row2.status_connect = 1; }//discharge
+                else { row2.status_connect = 0; } //disconnect 
+                Display.Add_row_data_package(2, row2, this);
+                access_db.insert_package("Package", row2, "Package 2");
+
+                Package row3 = new Package();
+                row3.capacity = (row1.capacity + row2.capacity)/2;
+                row3.current = battery_temperature[10];
+                // if current < 0 discharge current>0 charge (dong duong khi sac dong am khi xa)
+                row3.temperater = (row1.temperater + row2.temperater)/2;
+                row3.warning = status_package_1 | status_package_2;
+                row3.status_balance = false;
+                if (row1.status_connect == 0 && row2.status_connect == 0)
+                {
+                    row3.status_connect = 0;
+                }
+                else if (row3.current == 0) { row3.status_connect = 1; }
+                else if (row3.current > 0) { row3.status_connect = 2; }
+                else if (row3.current < 0) { row3.status_connect = 3; }
+                Display.Add_row_data_package(3, row3, this);
+                access_db.insert_package("Package", row3, "All Package");
+
+                //access_db.insert_battery("Battery", temp, i + 1);
+            }
+
+        }
         private void btnChart_Click(object sender, EventArgs e)
         {
             FLAG_REALTIME_CHART = 1;

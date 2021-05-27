@@ -43,3 +43,4 @@
 .\objects\package_data.o: uart.h
 .\objects\package_data.o: delay.h
 .\objects\package_data.o: system_timetick.h
+.\objects\package_data.o: adc.h

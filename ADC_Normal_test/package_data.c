@@ -93,7 +93,7 @@ else{
 }
 
 void package_data_infor(float voltage_module1[],int size_module1,float voltage_module2[],int size_module2,BYTE buffer_tx[],int size_buffer_tx,int startIndex){
-	union floatToByte temp;												
+	union floatToByte temp;		
 	for(int i =0 ;i<size_module1;i++){
 		temp.variableFloat = voltage_module1[i];
 		for(int index = 0 ; index < 4; index ++){
@@ -109,22 +109,25 @@ void package_data_infor(float voltage_module1[],int size_module1,float voltage_m
 }
 												
 void package_status_infor(B_Voltage_status Flag_battery[],int size_battery,B_Voltage_status Flag_temp[],int size_temp,BYTE buffer_tx[],int size_buffer_tx,int startIndex){
-		for(int i =0 ;i < (size_battery / 8);i++){
+	//size temp is 8 so run loop in one time
+		for(int i =0 ;i < (size_temp / 8);i++){
+				BYTE temp_byte = 0x00;
+				for(int j = i*8; j< i*8+8 ;j++){
+					BYTE temp_status = (Flag_temp[j] == MIN || Flag_temp[j] == MAX )? 0x01 : 0x00;
+					temp_byte |= (temp_status<<(j%8));
+				}
+				buffer_tx[startIndex++]=temp_byte;
+		}		
+	//size battery is 8 so run loop in one time
+	for(int i =0 ;i < (size_battery / 8);i++){
 				BYTE temp_byte = 0x00 ;
-				for(int j = i*8;j< i*8+8;j++){
+				for(int j = i*8; j< i*8+8 ;j++){
 					BYTE temp_status = (Flag_battery[j] == MIN || Flag_battery[j] == MAX) ? 0x01 : 0x00;
 					temp_byte |= (temp_status<<(j%8));
 				}
 				buffer_tx[startIndex++]=temp_byte;
 		}
-		for(int i =0 ;i < (size_temp / 8);i++){
-				BYTE temp_byte = 0x00;
-				for(int j = i*8;j< i*8+8;j++){
-					BYTE temp_status = (Flag_temp[j] == MIN || Flag_temp[j] == MAX )? 0x01 : 0x00;
-					temp_byte |= (temp_status<<(j%8));
-				}
-				buffer_tx[startIndex++]=temp_byte;
-		}
+	  
 }
 													
 void package_crc(BYTE buffer_tx[],int size_buffer_tx,int startIndex){
@@ -145,6 +148,7 @@ void package_end (BYTE buffer_tx[],int size_buffer,int startIndex){
 void package_data_human(Status Flag_pheripheral[],int size_flag_pheripheral,BYTE buffer_tx[],int size_buffer_tx,int startIndex){
 	for(int i =0 ;i < (size_flag_pheripheral / 8);i++){
 				BYTE temp_byte = 0x00 ;
+	      //byte 1 package, byte 2 package 2, byte 3 fan1, byte 4 fan2
 				for(int j = i*8;j< i*8+8;j++){
 					BYTE temp_status = Flag_pheripheral[j] == ON ? 0x01 : 0x00;
 					temp_byte |= (temp_status<<(j%8));
@@ -174,4 +178,43 @@ void set_emer_flag(float* battery_voltage,int size_battery,float* temp_voltage,i
 			{
 				Flag_emer[i+8] = temp_voltage[i]> 100 ? MAX:((temp_voltage[i])<0 ? MIN: NORMAL); 
 			}	
+}
+void set_flag(B_Voltage_status Flag[], int index , Style what,float value){
+	if(what == VOLTAGE){
+		if(value> 4.2 ){
+			// over voltage need to turn of package 1
+			Flag[index] = MAX;
+		}
+		else if(value < 3.2){
+			// over discharge need to turn off package 1
+			Flag[index] = MIN;
+		}
+		else
+			Flag[index] = NORMAL;
+	}
+	else if(what == TEMPERATURE){
+		// set flag battery temperature
+		if(value > 100 ){
+			// over voltage need to turn of package 1
+			Flag[index] = MAX;
+		}
+		else if(value < 0){
+			// over discharge need to turn off package 1
+			Flag[index] = MIN;
+		}
+		else
+			Flag[index] = NORMAL;
+	Dellay_us(10);
+	}
+}
+
+void get_current(float current_voltage[],float current_a[]){
+// get data from channel 	13 -14
+   current_voltage[0] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_1,MODULE1,VOLTAGE_REF)*CHANNEL_13;
+	 current_voltage[1] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_2,MODULE1,VOLTAGE_REF)*CHANNEL_14;
+	 current_voltage[2] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_3,MODULE1,2.997)*CHANNEL_15;
+	// convert voltage to current 13 -14
+	 current_a[0] = voltage_to_current(SENSITIVE_13,current_voltage[0],VOLTAGE_CURRENT_OFFSET,CHANNEL_13_IO);
+	 current_a[1] = voltage_to_current(SENSITIVE_14,current_voltage[1],VOLTAGE_CURRENT_OFFSET,CHANNEL_14_IO);
+	 current_a[2] = voltage_to_current(SENSITIVE_15,current_voltage[2],VOLTAGE_CURRENT_OFFSET,CHANNEL_15_IO);
 }

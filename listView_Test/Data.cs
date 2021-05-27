@@ -14,7 +14,7 @@ namespace listView_Test
                                 ref float[] temperature,
                                 int size_data,
                                 ref bool[] status_battery,
-                                ref bool[] status_voltage,
+                                ref bool[] status_adding,
                                 int size_status)
         {
             if ( size_buffer == 135 && buffer[0] == 'I')
@@ -30,16 +30,19 @@ namespace listView_Test
                     {
                         float_data[counter++] = BAToSingle(buffer, i, i / 4);
                     }
+                    //get temper
+                    //byte 8 9 10
                     for (int i = 0; i < size_data; i++)
                     {
                         temperature[i] = float_data[i];
                     }
                     for (int i = 0; i < size_data; i++)
                     {
+                        // 3 byte first of battery_voltage is the current
                         battery_voltage[i] = float_data[i + size_data];
                     }
                     ByteArrayToBool(new Byte[] { buffer[129], buffer[130] }, 2, ref status_battery, 2 * 8);
-                    ByteArrayToBool(new Byte[] { buffer[131], buffer[132] }, 2, ref status_voltage, 2 * 8);
+                    ByteArrayToBool(new Byte[] { buffer[131], buffer[132] }, 2, ref status_adding, 2 * 8);
                     return true;
                 }
                 else return false;

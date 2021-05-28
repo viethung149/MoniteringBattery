@@ -76,6 +76,31 @@ namespace listView_Test
                 return false;
             }
         }
+        public static bool check_correct_periPackage(byte[] buffer,
+                                                     int size_buffer,
+                                                     ref bool[] status_pheripheral,
+                                                     ref bool[] status_adding_pheripheral,
+                                                     int size_pheri) {
+            if (size_buffer == 135 && buffer[0] == 'H')
+            {
+                byte _crc = 0x00;
+                for (int i = 0; i < 5; i++) { _crc += buffer[i]; }
+                if (_crc == buffer[5] && buffer[134] == '\r')
+                {
+                    ByteArrayToBool(new Byte[] { buffer[1], buffer[2] }, 2, ref status_pheripheral, size_pheri);
+                    ByteArrayToBool(new Byte[] { buffer[3], buffer[4] }, 2, ref status_adding_pheripheral, size_pheri);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
          public static float BAToSingle(byte[] bytes, int index, int position)
         {
             float value = BitConverter.ToSingle(bytes, index);

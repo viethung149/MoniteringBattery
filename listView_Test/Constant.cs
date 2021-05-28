@@ -11,8 +11,9 @@ namespace listView_Test
 
         public const  int NUMBER_BATTERY = 16;
         public const  int NUMBER_PACKET = 3;
-        public const  int NUMBER_PHERI = 4;
+        public const  int NUMBER_PHERI = 16;
         public const int TAB_BATTERY_COLUMN = 5;
+        public const int SIZE_BUFFER_TX = 6;
     }
     public struct Battery
     {
@@ -34,5 +35,6 @@ namespace listView_Test
     public struct Peripheral
     {
         public bool status_connect;
+        public string name_peripheral;
     }
 }

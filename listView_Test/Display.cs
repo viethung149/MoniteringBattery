@@ -66,7 +66,7 @@ namespace listView_Test
         }
         public static void Add_row_data_pheripheral(int row, Peripheral pheri, Form1 f)
         {
-            if (row <= Constant.NUMBER_PHERI && row >= 0)
+            if (row <= 4 && row >= 0)
             {
                 string[] arr = new string[1];
                 arr[0] = pheri.status_connect == true ? "connect" : "disconnect";

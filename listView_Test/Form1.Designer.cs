@@ -116,7 +116,6 @@ namespace listView_Test
             // 
             // timerModifyPheripheral
             // 
-            this.timerModifyPheripheral.Enabled = true;
             this.timerModifyPheripheral.Tick += new System.EventHandler(this.timerModifyPheripheral_Tick);
             // 
             // groupBox1
@@ -365,6 +364,7 @@ namespace listView_Test
             this.btnFan2.TabIndex = 6;
             this.btnFan2.Text = "Fan 2";
             this.btnFan2.UseVisualStyleBackColor = true;
+            this.btnFan2.Click += new System.EventHandler(this.btnFan2_Click);
             // 
             // btnFan1
             // 
@@ -374,6 +374,7 @@ namespace listView_Test
             this.btnFan1.TabIndex = 5;
             this.btnFan1.Text = "Fan 1";
             this.btnFan1.UseVisualStyleBackColor = true;
+            this.btnFan1.Click += new System.EventHandler(this.btnFan1_Click);
             // 
             // btnRelay2
             // 
@@ -383,6 +384,7 @@ namespace listView_Test
             this.btnRelay2.TabIndex = 3;
             this.btnRelay2.Text = "Relay 2";
             this.btnRelay2.UseVisualStyleBackColor = true;
+            this.btnRelay2.Click += new System.EventHandler(this.btnRelay2_Click);
             // 
             // btnRelay1
             // 
@@ -392,6 +394,7 @@ namespace listView_Test
             this.btnRelay1.TabIndex = 2;
             this.btnRelay1.Text = "Relay 1";
             this.btnRelay1.UseVisualStyleBackColor = true;
+            this.btnRelay1.Click += new System.EventHandler(this.btnRelay1_Click);
             // 
             // btnStart
             // 

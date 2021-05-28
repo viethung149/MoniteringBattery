@@ -20,6 +20,8 @@ namespace listView_Test
 
     public partial class Form1 : Form
     {
+        // buffer TX
+        private byte[] buffer_tx = new byte[Constant.SIZE_BUFFER_TX];
         public static int FLAG_REALTIME_CHART = 0;
         Database access_db = new Database();
         public int INDEX_BATTERY = 1;
@@ -35,6 +37,7 @@ namespace listView_Test
         private bool[] status_emer_bar2 = new bool[Constant.NUMBER_BATTERY];
         // notify the status of peripheral
         private bool[] status_peripheral = new bool[Constant.NUMBER_PHERI];
+        private bool[] status_adding_pheripheral = new bool[Constant.NUMBER_PHERI];
         // set delegate to handle serial
         delegate void SetTextCallBack(string text);
         // set delegate to handle settable infor
@@ -51,8 +54,13 @@ namespace listView_Test
                               bool[] status_battery,
                               bool[] status_peripheral,
                               int size);
+        // set delegate to handle set peripheral
+        delegate void SetTable_peripheral(bool[] status_peripheral, bool[] status_adding_pheripheral, int size);
         public Chart_Form chart_form = new Chart_Form();
-
+        bool Flag_package1 = false;
+        bool Flag_package2 = false;
+        bool Flag_fan1 = false;
+        bool Flag_fan2 = false;
 
         private void init_listView_battery() {
             Battery init = new Battery();
@@ -121,12 +129,13 @@ namespace listView_Test
             //ListViewItem item1 = new ListViewItem();
             //item1.Text = "Item1";
             //item1.SubItems.Add(new ListViewItem.ListViewSubItem() { Text = "Sub Item 1" });
-            for (int i = 1; i <= Constant.NUMBER_BATTERY / 2; i++) {
+            for (int i = 1; i <= Constant.NUMBER_BATTERY / 2; i++)
+            {
                 CustomListView_Battery.Items.Add("Battery " + i.ToString());
             }
             CustomListView_Battery.View = View.Details;
             CustomListView_Battery.Dock = DockStyle.Fill;
-            init_listView_battery();
+            //init_listView_battery();
         }
         void LoadListView_Package() {
             CustomListView_Battery.FullRowSelect = true;
@@ -157,11 +166,10 @@ namespace listView_Test
             CustomListView_Pheripheral.Columns.Add("Name Pheripheral");
             CustomListView_Pheripheral.Columns.Add("Status");
 
-            CustomListView_Pheripheral.Items.Add("Fan 1");
-            CustomListView_Pheripheral.Items.Add("Fan 2");
-            CustomListView_Pheripheral.Items.Add("Relay package 1");
-            CustomListView_Pheripheral.Items.Add("Relay package 2");
-            CustomListView_Pheripheral.Items.Add("Relay package 3");
+            CustomListView_Pheripheral.Items.Add("Relay 1 - Package 1");
+            CustomListView_Pheripheral.Items.Add("Relay 2 - Package 2");
+            CustomListView_Pheripheral.Items.Add("Relay 3 - Fan 1");
+            CustomListView_Pheripheral.Items.Add("Relay 4 - Fan 2");
 
         }
         void LoadComboBox_Serial()
@@ -229,11 +237,11 @@ namespace listView_Test
         private void timerModifyPheripheral_Tick(object sender, EventArgs e)
         {
             //Console.WriteLine("timer check  3");
-            Peripheral test = new Peripheral();
-            Random rand = new Random();
-            test.status_connect = rand.Next(0, 2) > 0;
-            Display.Add_row_data_pheripheral(INDEX_PHERI++, test, this);
-            if (INDEX_PHERI == Constant.NUMBER_PHERI + 1) INDEX_PHERI = 1;
+            //Peripheral test = new Peripheral();
+            //Random rand = new Random();
+            //test.status_connect = rand.Next(0, 2) > 0;
+            //Display.Add_row_data_pheripheral(INDEX_PHERI++, test, this);
+            //if (INDEX_PHERI == Constant.NUMBER_PHERI + 1) INDEX_PHERI = 1;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -341,7 +349,7 @@ namespace listView_Test
             //Port.Read(buffer_rx, 0, bytes);
             if (update) {
                 update = false;
-                if (data[0] == 'I' || data[0] == 'E')
+                if (data[0] == 'I' || data[0] == 'E' || data[0] == 'H')
                 {
                     int number_bytes = data.Length;
                     string content1 = "number of bytes read is" + data.Length.ToString() + ": ";
@@ -357,7 +365,7 @@ namespace listView_Test
                     {
                         content1 += "success emer";
                     }
-                    else if (Data.check_correct_inforPackage(data,
+                    if (Data.check_correct_inforPackage(data,
                                                         number_bytes,
                                                         ref battery_voltage,
                                                         ref battery_temperature,
@@ -373,10 +381,18 @@ namespace listView_Test
                             Data_chart.add_point("Battery Voltage", 100, 100, chart_form);
                         }
                         SetListView_Infor(battery_voltage, battery_temperature, status_battery, status_adding, status_emer_bar1, status_emer_bar2, Constant.NUMBER_BATTERY);
-                        SetListView_Pakage(battery_voltage, battery_temperature, status_battery, status_peripheral ,Constant.NUMBER_BATTERY);
+                        SetListView_Pakage(battery_voltage, battery_temperature, status_battery, status_peripheral, Constant.NUMBER_BATTERY);
                         SetRealTimeChart(battery_voltage, battery_temperature, Constant.NUMBER_BATTERY);
                     }
-
+                    if (Data.check_correct_periPackage(data,
+                                                       number_bytes,
+                                                       ref status_peripheral,
+                                                       ref status_adding_pheripheral,
+                                                       Constant.NUMBER_PHERI)) 
+                    {
+                        content1 += " success human";
+                        SetListView_Pheripheral(status_peripheral, status_adding_pheripheral, Constant.NUMBER_PHERI);
+                    }
                     //Port.DiscardInBuffer();
                     SetText(content1);
 
@@ -453,10 +469,10 @@ namespace listView_Test
                 bool status_voltage_package_1 = false;
                 bool status_temperature_package_2= false;
                 bool status_voltage_package_2= false;
-                bool FAN_1 = status_peripheral[0];
-                bool FAN_2 = status_peripheral[1];
-                bool PACKAGE_1 = status_peripheral[2];
-                bool PACKAGE_2 = status_peripheral[3];
+                bool PACKAGE_1 = status_peripheral[0];
+                bool PACKAGE_2 = status_peripheral[1];
+                bool FAN_1 = status_peripheral[2];
+                bool FAN_2 = status_peripheral[3];
                 for (int i = 0; i < 4; i++) {
                     status_temperature_package_1 |= status_battery[i];
                     status_voltage_package_1 |= status_battery[i + 8];
@@ -471,7 +487,7 @@ namespace listView_Test
 
                 Package row1 = new Package();
                 row1.capacity = battery_voltage[0] + battery_voltage[1] + battery_voltage[2] + battery_voltage[3];
-                row1.current = battery_temperature[8];
+                row1.current = battery_temperature[9];
                 // if current < 0 discharge current>0 charge (dong duong khi sac dong am khi xa)
                 row1.temperater = (battery_temperature[0] + battery_temperature[1] + battery_temperature[2] + battery_temperature[3])/4;
                 row1.warning = status_package_1;
@@ -484,7 +500,7 @@ namespace listView_Test
                 access_db.insert_package("Package", row1, "Package 1");
                 Package row2 = new Package();
                 row2.capacity = battery_voltage[4] + battery_voltage[5] + battery_voltage[6] + battery_voltage[7];
-                row2.current = battery_temperature[9];
+                row2.current = battery_temperature[10];
                 // if current < 0 discharge current>0 charge (dong duong khi sac dong am khi xa)
                 row2.temperater = (battery_temperature[4] + battery_temperature[5] + battery_temperature[6] + battery_temperature[7])/4;
                 row2.warning = status_package_2;
@@ -498,7 +514,7 @@ namespace listView_Test
 
                 Package row3 = new Package();
                 row3.capacity = (row1.capacity + row2.capacity)/2;
-                row3.current = battery_temperature[10];
+                row3.current = battery_temperature[8];
                 // if current < 0 discharge current>0 charge (dong duong khi sac dong am khi xa)
                 row3.temperater = (row1.temperater + row2.temperater)/2;
                 row3.warning = status_package_1 | status_package_2;
@@ -516,6 +532,47 @@ namespace listView_Test
                 //access_db.insert_battery("Battery", temp, i + 1);
             }
 
+        }
+        public void SetListView_Pheripheral(bool[] status_pheripheral, bool[] status_adding_pheripheral, int size)
+        {
+            //  byte 1 bit1 bit2 bit3 bit4
+            if (this.CustomListView_Battery.InvokeRequired)
+            {
+                SetTable_peripheral d = new SetTable_peripheral(SetListView_Pheripheral);
+                this.Invoke(d, status_pheripheral, status_adding_pheripheral, size);
+            }
+            else
+            {
+                // package 1
+                Peripheral package1 = new Peripheral();
+                package1.status_connect = status_peripheral[0];
+                Flag_package1 = package1.status_connect;
+                package1.name_peripheral = "Relay 1 - Package 1";
+                Display.Add_row_data_pheripheral(1, package1, this);
+                access_db.insert_peri("Peripheral", package1, package1.name_peripheral);
+                // package 2
+                Peripheral package2 = new Peripheral();
+                package2.status_connect = status_peripheral[1];
+                Flag_package2 = package2.status_connect;
+                package2.name_peripheral = "Relay 2 - Package 2";
+                Display.Add_row_data_pheripheral(2, package2, this);
+                access_db.insert_peri("Peripheral", package2, package2.name_peripheral);
+                // fan1
+                Peripheral fan1 = new Peripheral();
+                fan1.status_connect = status_peripheral[2];
+                Flag_fan1 = fan1.status_connect;
+                fan1.name_peripheral = "Relay 3 - Fan 1";
+                Display.Add_row_data_pheripheral(3, fan1, this);
+                access_db.insert_peri("Peripheral", fan1, fan1.name_peripheral);
+                // fan2
+                Peripheral fan2 = new Peripheral();
+                fan2.status_connect = status_peripheral[3];
+                Flag_fan2 = fan2.status_connect;
+                fan2.name_peripheral = "Relay 4 - Fan 2";
+                Display.Add_row_data_pheripheral(4, fan2, this);
+                access_db.insert_peri("Peripheral", fan2, fan2.name_peripheral);
+            }
+        
         }
         private void btnChart_Click(object sender, EventArgs e)
         {
@@ -541,6 +598,34 @@ namespace listView_Test
             string infor = Value.ToString("0.000") + " at " + dt.ToString("HH:mm");
             tooltip.AutoPopDelay = 5000;
             tooltip.Show(infor, lineChart);
+        }
+
+        private void btnRelay1_Click(object sender, EventArgs e)
+        {
+            //SetBufferSend(1, !Flag_package1, ref buffer_tx);
+            Port.Write(new byte[] { 0x01 }, 0, 1);
+           //reset_buffer_tx(ref buffer_tx, Constant.SIZE_BUFFER_TX);
+        }
+
+        private void btnRelay2_Click(object sender, EventArgs e)
+        {
+            //SetBufferSend(2, !Flag_package2, ref buffer_tx);
+            Port.Write(new byte[] { 0x02 }, 0, 1);
+            //reset_buffer_tx(ref buffer_tx, Constant.SIZE_BUFFER_TX);
+        }
+
+        private void btnFan1_Click(object sender, EventArgs e)
+        {
+            //SetBufferSend(3, !Flag_fan1, ref buffer_tx);
+            Port.Write(new byte[] { 0x03 }, 0, 1);
+            //reset_buffer_tx(ref buffer_tx, Constant.SIZE_BUFFER_TX);
+        }
+
+        private void btnFan2_Click(object sender, EventArgs e)
+        {
+            //SetBufferSend(4, !Flag_fan2, ref buffer_tx);
+            Port.Write(new byte[] { 0x04 }, 0, 1);
+            //reset_buffer_tx(ref buffer_tx, Constant.SIZE_BUFFER_TX);
         }
 
         private void lineChart_DataItemClicked_1(object sender, HitResult e)
@@ -692,6 +777,29 @@ namespace listView_Test
                 lineChart1.ChartPanel.InvalidateLayout();
 
             }
+        }
+        private void SetBufferSend(int numberOfPackage, bool status,ref byte[] buffer_tx) {
+            if (numberOfPackage < 1 || numberOfPackage > 4) return;
+            buffer_tx[4] = (byte)'\r';
+            buffer_tx[5] = (byte)'\n';
+            if (numberOfPackage == 1 || numberOfPackage == 2)
+            {
+                buffer_tx[0] = (byte)'R';
+                buffer_tx[1] = (byte)(numberOfPackage + 48);
+                buffer_tx[2] = (byte)((status == true) ? 0x01 : 0x00);
+                for (int i = 0; i < 3; i++) buffer_tx[3] += buffer_tx[i];
+            }
+            if (numberOfPackage == 3 || numberOfPackage == 4)
+            {
+                buffer_tx[0] = (byte)'F';
+                buffer_tx[1] = (byte)(numberOfPackage + 48);
+                buffer_tx[2] = (byte)((status == true) ? 0x01 : 0x00);
+                for (int i = 0; i < 3; i++) buffer_tx[3] += buffer_tx[i];
+            }
+        }
+        private void reset_buffer_tx(ref byte[] buffer_tx, int size) {
+            for (int i = 0; i < size; i++)
+                buffer_tx[i] = 0;
         }
     }
 }

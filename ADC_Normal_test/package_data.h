@@ -8,6 +8,7 @@
 #include "adc.h"
 extern BYTE buffer_tx_uart[];
 extern BYTE buffer_tx_spi[];
+extern BYTE buffer_tx_spi_esp[];
 
 extern float voltage_module1[];
 extern float voltage_module2[];
@@ -21,7 +22,13 @@ extern Status CHANNEL_13_IO;
 extern B_Voltage_status Flag_battery[];
 extern B_Voltage_status Flag_temp[];
 extern Status Flag_pheripheral[];
+extern Status Flag_blancing[];
 extern B_Voltage_status Flag_emer[];
+
+extern Status FAIL_CURRENT_P1;
+extern Status FAIL_CURRENT_P2;
+extern Status FAIL_CURRENT_ALL;
+
 #define START_HEADER_INFO  0
 #define START_DATA_INFO    1
 #define START_STATUS_INFO  129
@@ -38,6 +45,18 @@ extern B_Voltage_status Flag_emer[];
 #define START_CRC_EMER 5
 #define START_END_EMER 134
 
+#define SPI_ESP_HEADER             0
+#define SPI_ESP_VOLTAGE            1
+#define SPI_ESP_TEMPERATURE        33
+#define SPI_ESP_CURRENT            65
+#define SPI_ESP_STATUS_VOLTAGE     77
+#define SPI_ESP_STATUS_TEMPERATURE 78
+#define SPI_ESP_STATUS_CURRENT     79
+#define SPI_ESP_STATUS_PHERIPHERAL 80
+#define SPI_ESP_STATUS_BLANCE      81
+#define SPI_ESP_ADDING             82
+#define SPI_ESP_CRC                90
+#define SPI_ESP_END                91
 void reset_buffer_tx(BYTE buffer_tx[],int size_buffer_tx);
 void init_data_test(float voltage_module1[],
 										int size_module1,
@@ -108,4 +127,15 @@ void package_human_spi();
 void package_emer_spi();
 void set_flag(B_Voltage_status Flag[], int index , Style what,float value);
 void get_current(float current_voltage[],float current_a[]);
+									 
+void package_infor_spi_esp();
+void package_voltage(BYTE buffer_tx_spi_esp[],float voltage_module2[], int size,int startIndex);
+void package_temperature(BYTE buffer_tx_spi_esp[],float voltage_module1[], int size,int startIndex);
+void package_current(BYTE buffer_tx_spi_esp[],float current_a[], int size,int startIndex);
+void package_status_voltage(BYTE buffer_tx_spi_esp[], B_Voltage_status Voltage_status[],int size, int startIndex);
+void package_status_temperature (BYTE buffer_tx_spi_esp[], B_Voltage_status Temp_status[],int size, int startIndex);
+void package_status_current (BYTE buffer_tx_spi_esp[], int startIndex);
+void package_status_pheripheral (BYTE buffer_tx_spi_esp[], Status Flag_pheripheral[],int size, int startIndex);
+void package_status_balancing(BYTE buffer_tx_spi_esp[],Status Flag_blancing[], int size, int startIndex); 
+									 
 #endif

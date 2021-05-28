@@ -32,6 +32,7 @@ void package_infor_spi(){
 	package_end (buffer_tx_spi,SIZE_BUFFER_TX,START_END_INFOR);
 	GPIO_ResetBits(GPIOA,NSS);
 	SPI_send_data(buffer_tx_spi);
+	Dellay_ms_timer4(1);
 	GPIO_SetBits(GPIOA,NSS);
 }
 void package_human_spi(){
@@ -86,6 +87,9 @@ else if (types ==  HUMAN_TOUCH){
 }
 else if (types ==  EMER){
 	buffer_tx[startIndex] = 'E';
+}
+else if (types ==  UPLOAD){
+	buffer_tx[startIndex] = 'U';
 }
 else{
 
@@ -218,3 +222,112 @@ void get_current(float current_voltage[],float current_a[]){
 	 current_a[1] = voltage_to_current(SENSITIVE_14,current_voltage[1],VOLTAGE_CURRENT_OFFSET,CHANNEL_14_IO);
 	 current_a[2] = voltage_to_current(SENSITIVE_15,current_voltage[2],VOLTAGE_CURRENT_OFFSET,CHANNEL_15_IO);
 }
+// set the package to send to esp32
+void package_infor_spi_esp(){
+	package_header( UPLOAD,buffer_tx_spi_esp, SPI_ESP_HEADER);	
+	// add voltage 4*8 bytes
+	package_voltage(buffer_tx_spi_esp,voltage_module2,8,SPI_ESP_VOLTAGE);
+	// add temperature 4*8 bytes
+	package_temperature(buffer_tx_spi_esp,voltage_module1,8,SPI_ESP_TEMPERATURE);
+	// add curent 3*8 bytes
+	package_current(buffer_tx_spi_esp,current_a,3,SPI_ESP_CURRENT);
+	// add status
+	package_status_voltage(buffer_tx_spi_esp, Flag_battery,1,SPI_ESP_STATUS_VOLTAGE);
+	package_status_temperature(buffer_tx_spi_esp, Flag_temp,1 , SPI_ESP_STATUS_TEMPERATURE);
+	package_status_current(buffer_tx_spi_esp,SPI_ESP_STATUS_CURRENT);
+	package_status_pheripheral(buffer_tx_spi_esp, Flag_pheripheral, 1, SPI_ESP_STATUS_PHERIPHERAL);
+	package_status_balancing(buffer_tx_spi_esp,Flag_blancing, 1, SPI_ESP_STATUS_BLANCE);
+	package_crc(buffer_tx_spi_esp,SIZE_BUFFER_ESP_TX,SPI_ESP_CRC);
+	package_end (buffer_tx_spi_esp,SIZE_BUFFER_ESP_TX,SPI_ESP_END);
+	GPIO_ResetBits(GPIOA,NSS_ESP);
+	SPI_send_data(buffer_tx_spi_esp);
+	Dellay_ms_timer4(10);
+	GPIO_SetBits(GPIOA,NSS_ESP);
+}
+// set voltage spi esp
+void package_voltage(BYTE buffer_tx_spi_esp[],float voltage_module2[], int size,int startIndex){
+	union floatToByte temp;		
+	for(int i =0 ;i<size;i++){
+		temp.variableFloat = voltage_module2[i];
+		for(int index = 0 ; index < 4; index ++){
+			buffer_tx_spi_esp[startIndex++] = temp.varialbeByte[index];
+		}
+	}
+} 
+// set temperature spi esp
+void package_temperature(BYTE buffer_tx_spi_esp[],float voltage_module1[], int size,int startIndex){
+	union floatToByte temp;		
+	for(int i =0 ;i<size;i++){
+		temp.variableFloat = voltage_module1[i];
+		for(int index = 0 ; index < 4; index ++){
+			buffer_tx_spi_esp[startIndex++] = temp.varialbeByte[index];
+		}
+	}
+}
+// set current spi esp
+void package_current(BYTE buffer_tx_spi_esp[],float current_a[], int size,int startIndex){
+	union floatToByte temp;		
+	for(int i =0 ;i<size;i++){
+		temp.variableFloat = current_a[i];
+		for(int index = 0 ; index < 4; index ++){
+			buffer_tx_spi_esp[startIndex++] = temp.varialbeByte[index];
+		}
+	}
+}
+// set status voltage
+void package_status_voltage(BYTE buffer_tx_spi_esp[], B_Voltage_status Voltage_status[],int size, int startIndex){
+	
+		for(int i =0 ;i < size;i++){
+				BYTE temp_byte = 0x00;
+				for(int j = i*8; j< i*8+8 ;j++){
+					BYTE temp_status = (Voltage_status[j] == MIN || Voltage_status[j] == MAX )? 0x01 : 0x00;
+					temp_byte |= (temp_status<<(j%8));
+				}
+				buffer_tx_spi_esp[startIndex++]=temp_byte;
+		}		
+}
+// set status temperature
+void package_status_temperature (BYTE buffer_tx_spi_esp[], B_Voltage_status Temp_status[],int size, int startIndex){
+	
+		for(int i =0 ;i < size;i++){
+				BYTE temp_byte = 0x00;
+				for(int j = i*8; j< i*8+8 ;j++){
+					BYTE temp_status = (Temp_status[j] == MIN || Temp_status[j] == MAX )? 0x01 : 0x00;
+					temp_byte |= (temp_status<<(j%8));
+				}
+				buffer_tx_spi_esp[startIndex++]=temp_byte;
+		}		
+}
+// set status pheripheral
+void package_status_pheripheral (BYTE buffer_tx_spi_esp[], Status Flag_pheripheral[],int size, int startIndex){
+	
+		for(int i =0 ;i < size;i++){
+				BYTE temp_byte = 0x00;
+				for(int j = i*8; j< i*8+8 ;j++){
+					BYTE temp_status = Flag_pheripheral[j] == ON? 0x01 : 0x00;
+					temp_byte |= (temp_status<<(j%8));
+				}
+				buffer_tx_spi_esp[startIndex++]=temp_byte;
+		}		
+}
+//set status current
+void package_status_current(BYTE buffer_tx_spi_esp[],int startIndex){
+	BYTE temp_byte = 0x00;
+	temp_byte |= (FAIL_CURRENT_P1 == ON)? 0x01: 0x00;
+	temp_byte |= (FAIL_CURRENT_P2 == ON)? 0x01: 0x00;
+	temp_byte |= (FAIL_CURRENT_ALL == ON)? 0x01: 0x00;
+	buffer_tx_spi_esp[startIndex++] = temp_byte;
+}
+//set status balance
+void package_status_balancing(BYTE buffer_tx_spi_esp[],Status Flag_blancing[], int size, int startIndex){
+	for(int i =0 ;i < size;i++){
+				BYTE temp_byte = 0x00;
+				for(int j = i*8; j< i*8+8 ;j++){
+					BYTE temp_status = Flag_blancing[j] == ON? 0x01 : 0x00;
+					temp_byte |= (temp_status<<(j%8));
+				}
+				buffer_tx_spi_esp[startIndex++]=temp_byte;
+				
+		}		
+}
+		

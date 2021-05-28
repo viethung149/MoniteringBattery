@@ -352,6 +352,16 @@
           <WinNumber>2</WinNumber>
           <ItemText>counter_charge,0x0A</ItemText>
         </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>buffer_tx_spi</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>buffer_tx_spi_esp</ItemText>
+        </Ww>
       </WatchWindow2>
       <Tracepoint>
         <THDelay>0</THDelay>

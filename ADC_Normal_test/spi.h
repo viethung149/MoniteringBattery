@@ -9,11 +9,13 @@
 #define MISO  GPIO_Pin_6
 #define CLK   GPIO_Pin_5
 #define NSS   GPIO_Pin_10
+#define NSS_ESP GPIO_Pin_15
 #define Handshark  GPIO_Pin_8
 void SPI_pin_config(void);
 void SPI_init(void);
-// NSS pin is PA9
+// NSS pin is PA10
 void SPI_pin_nss(void);
+void SPI_pin_nss_esp(void);
 void SPI_exti_pin_handshark(void);
 void SPI_send_data(BYTE* tx_buffer);
 #endif

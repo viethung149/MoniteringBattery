@@ -29,6 +29,7 @@ typedef enum
 	INFO = 0, // send data sensor   (Header I)
 	HUMAN_TOUCH,// send when people pressbutton on the PCB board (Header H)
 	EMER,       // send when emergency     (Header E)
+	UPLOAD,     //send when update data to internet
 }TX_types;
 //-------------------- define for Extract frame -----------------------------
 union floatToByte
@@ -150,4 +151,6 @@ union floatToByte
 #define EMER_TEMP_CURRENT_1 16
 #define EMER_TEMP_CURRENT_2 17
 #define EMER_TEMP_CURRENT_3 18
+//--------------------- spi_esp32 -----------------------------------
+#define SIZE_BUFFER_ESP_TX 93 
 #endif

@@ -28,6 +28,7 @@ Status FAIL_TEMPERATURE_P2 = OFF;
 Status FAIL_VOLTAGE_P2 = OFF;
 Status FAIL_CURRENT_P2 = OFF;
 
+Status FAIL_CURRENT_ALL =OFF;
 Status CHANNEL_15_IO = ON;
 Status CHANNEL_14_IO = ON;
 Status CHANNEL_13_IO = ON;
@@ -41,16 +42,20 @@ int counter_charge =0;
 //status 
 float voltage_package_1 = 0;
 float voltage_package_2 = 0;
+// check status voltage cell battery
 B_Voltage_status Flag_battery[SIZE_BATTERY]={NORMAL};//{MAX,NORMAL,MAX,MIN,NORMAL,MAX,NORMAL,NORMAL}; // 1011 0100
+// check status temperature cell battery
 B_Voltage_status Flag_temp[SIZE_TEMPERATURE]= {NORMAL};//{MAX,MIN,MAX,MIN,NORMAL,MAX,NORMAL,NORMAL};  // 1111 0100
-
+// check status pheripheral
 Status Flag_pheripheral[SIZE_PHERIPHERAL] ={OFF};
-
+Status Flag_blancing[SIZE_BATTERY] ={OFF};
 B_Voltage_status Flag_emer[SIZE_EMER] = {NORMAL};
+
+
 BYTE buffer_tx_uart[SIZE_BUFFER_TX]={0};
 BYTE buffer_tx_spi[SIZE_BUFFER_TX]={0};
-BYTE buffer_rx[SIZE_BUFFER_RX]={0};
-int index_bfrx =0;
+BYTE buffer_tx_spi_esp[SIZE_BUFFER_ESP_TX]={0};
+
 Status Read_uart_done=OFF;
 uint16_t PIN_SELECT_MODULE1[]={ENABLE_MODULE_1, 
 															 S0_MODULE_1,
@@ -80,9 +85,6 @@ int temp_ratio[]={TEM1_P1,
 									TEM2_P2,
 									TEM3_P2,
 								  TEM4_P2};
-
-//--uart--//
-char RX_buffer[1000]={0};
 
 //--adc--//
 BitAction READ_ADC_FLAG = Bit_RESET;
@@ -229,7 +231,7 @@ void process_package1(void);
 void process_package2(void);
 void process_fan1(void);
 void process_fan2(void);
-void check_buffer_rx(BYTE buffer_rx[], int size);
+void check_buffer_rx();
 ///* USER CODE BEGIN PFP */
 ///* Private function prototypes -----------------------------------------------*/
 struct __FILE
@@ -377,6 +379,7 @@ int main()
 	SPI_pin_config();
 	SPI_init();
 	SPI_pin_nss();
+	SPI_pin_nss_esp();
 	while(1)
 	{
 	  if(READ_ADC_FLAG == Bit_SET)
@@ -403,45 +406,30 @@ int main()
 		if(Read_uart_done == ON){
 			 printf("IN UPDATE RELAY FROM SOLFWARE \n");
 			Read_uart_done = OFF;
-			check_buffer_rx(buffer_rx,SIZE_BUFFER_RX);
+			check_buffer_rx();
 			//reset_buffer_rx(buffer_rx,SIZE_BUFFER_RX);
 		}
 	}
 	return 0;
 }
-//// handler external 5 PD7
-//// control Fan2 
-//// Led PC 4
+
+
+
 void EXTI9_5_IRQHandler(void){
-//  if(EXTI_GetITStatus(EXTI_Line7) != RESET)
-//  {
-//		if(Flag_pheripheral[FAN_2] == OFF)
-//		{
-//			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_5) == Bit_SET){
-//			  Dellay_us(10000);
-//				GPIO_ResetBits(GPIOC, GPIO_Pin_5);
-//				Flag_pheripheral[FAN_2] = ON;
-//			}
-//		}
-//			else if (FAIL_TEMPERATURE_P2 == OFF)
-//		{
-//			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_5) == Bit_RESET){
-//				Dellay_us(10000);
-//				GPIO_SetBits(GPIOC, GPIO_Pin_5);
-//				Flag_pheripheral[FAN_2] = OFF;
-//			}
-//		}
-//		package_human();
-//		//send the packet
-//		printf("press button Fan2 \n");
-//    EXTI_ClearITPendingBit(EXTI_Line7);
-//  }
+	// handler handshark spi stm32f103
 	if(EXTI_GetITStatus(EXTI_Line6) != RESET)
   {
 		Dellay_us(1000);
 		// send frame SPI 
 		package_infor_spi();
     EXTI_ClearITPendingBit(EXTI_Line6);
+  }
+	// handler handshark spi esp32
+	if(EXTI_GetITStatus(EXTI_Line8) != RESET)
+  {
+		Dellay_us(1000);
+    package_infor_spi_esp();
+    EXTI_ClearITPendingBit(EXTI_Line8);
   }
 }
 //----------------------------------------------------------------------------------------------------
@@ -524,7 +512,7 @@ void USART1_IRQHandler(void)
 			}
 	}
 }
-void check_buffer_rx(BYTE buffer_rx[], int size){
+void check_buffer_rx(){
 //	if(buffer_rx[0] != 'R' && buffer_rx[0] != 'F') return;
 //	if(buffer_rx[4] != '\r' || buffer_rx[5] != '\n') return;
 //	BYTE _crc_test = buffer_rx[0] + buffer_rx[1] + buffer_rx[2];

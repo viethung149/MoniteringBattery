@@ -27,45 +27,49 @@ Project File Date:  05/28/2021
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Target 1'
-compiling main.c...
-delay.h(11): warning:  #1-D: last line of file ends without a newline
+compiling package_data.c...
+type.h(156): warning:  #1-D: last line of file ends without a newline
   #endif
-type.h(153): warning:  #1-D: last line of file ends without a newline
+spi.h(21): warning:  #1-D: last line of file ends without a newline
+  #endif
+spi.h(21): warning:  #1-D: last line of file ends without a newline
   #endif
 uart.h(12): warning:  #1-D: last line of file ends without a newline
   #endif
-timer.h(8): warning:  #1-D: last line of file ends without a newline
+delay.h(11): warning:  #1-D: last line of file ends without a newline
   #endif
 adc.h(20): warning:  #1-D: last line of file ends without a newline
   #endif
-exti.h(9): warning:  #1-D: last line of file ends without a newline
-  #endif
-status.h(8): warning:  #1-D: last line of file ends without a newline
-  #endif
-spi.h(19): warning:  #1-D: last line of file ends without a newline
-  #endif
-spi.h(19): warning:  #1-D: last line of file ends without a newline
-  #endif
-package_data.h(106): warning:  #1295-D: Deprecated declaration package_infor_spi - give arg types
+package_data.h(125): warning:  #1295-D: Deprecated declaration package_infor_spi - give arg types
   void package_infor_spi();
-package_data.h(107): warning:  #1295-D: Deprecated declaration package_human_spi - give arg types
+package_data.h(126): warning:  #1295-D: Deprecated declaration package_human_spi - give arg types
   void package_human_spi();
-package_data.h(108): warning:  #1295-D: Deprecated declaration package_emer_spi - give arg types
+package_data.h(127): warning:  #1295-D: Deprecated declaration package_emer_spi - give arg types
   void package_emer_spi();
-package_data.h(111): warning:  #1-D: last line of file ends without a newline
+package_data.h(131): warning:  #1295-D: Deprecated declaration package_infor_spi_esp - give arg types
+  void package_infor_spi_esp();
+package_data.h(141): warning:  #1-D: last line of file ends without a newline
   #endif
-input_pin.h(9): warning:  #1-D: last line of file ends without a newline
-  #endif
-main.c(227): warning:  #940-D: missing return statement at end of non-void function "check_temperature" 
-  }
-main.c(410): warning:  #111-D: statement is unreachable
-  	return 0;
-main.c(599): warning:  #1-D: last line of file ends without a newline
-  }
-main.c: 17 warnings, 0 errors
+package_data.c(179): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+  				Flag_emer[i] = battery_voltage[i]> 4.2 ? MAX:((battery_voltage[i]<3.2)? MIN : NORMAL); 
+package_data.c(179): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+  				Flag_emer[i] = battery_voltage[i]> 4.2 ? MAX:((battery_voltage[i]<3.2)? MIN : NORMAL); 
+package_data.c(188): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+  		if(value> 4.2 ){
+package_data.c(192): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+  		else if(value < 3.2){
+package_data.c(217): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+     current_voltage[0] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_1,MODULE1,VOLTAGE_REF)*CHANNEL_13;
+package_data.c(218): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+  	 current_voltage[1] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_2,MODULE1,VOLTAGE_REF)*CHANNEL_14;
+package_data.c(219): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+  	 current_voltage[2] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_3,MODULE1,2.997)*CHANNEL_15;
+package_data.c(333): warning:  #1-D: last line of file ends without a newline
+  		
+package_data.c: 19 warnings, 0 errors
 linking...
-Program Size: Code=13322 RO-data=450 RW-data=256 ZI-data=3352  
-".\Objects\adc.axf" - 0 Error(s), 17 Warning(s).
+Program Size: Code=14242 RO-data=450 RW-data=256 ZI-data=2448  
+".\Objects\adc.axf" - 0 Error(s), 19 Warning(s).
 
 <h2>Software Packages used:</h2>
 

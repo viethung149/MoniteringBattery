@@ -34,8 +34,8 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("E:/code_esp/spi_master_test/build/esp-idf/mbedtls/mbedtls/library/cmake_install.cmake")
-  include("E:/code_esp/spi_master_test/build/esp-idf/mbedtls/mbedtls/include/cmake_install.cmake")
+  include("C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/esp-idf/mbedtls/mbedtls/library/cmake_install.cmake")
+  include("C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/esp-idf/mbedtls/mbedtls/include/cmake_install.cmake")
 
 endif()
 

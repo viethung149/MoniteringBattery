@@ -1,12 +1,12 @@
 {
     "project_name":       "bootloader",
     "project_path":       "C:/Users/ADMIN/Desktop/esp-idf-2/components/bootloader/subproject",
-    "build_dir":          "E:/code_esp/spi_master_test/build/bootloader",
-    "config_file":        "E:/code_esp/spi_master_test/sdkconfig",
+    "build_dir":          "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/bootloader",
+    "config_file":        "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/sdkconfig",
     "config_defaults":    "",
     "app_elf":            "bootloader.elf",
     "app_bin":            "bootloader.bin",
-    "git_revision":       "-128-NOTFOUND",
+    "git_revision":       "v4.0.2-442-g41efdb0b3-dirty",
     "phy_data_partition": "",
     "monitor_baud" : "115200",
     "config_environment" : {

@@ -2,34 +2,34 @@
 	"sources" : 
 	[
 		{
-			"file" : "E:/code_esp/spi_master_test/build/CMakeFiles/bootloader"
+			"file" : "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/CMakeFiles/bootloader"
 		},
 		{
-			"file" : "E:/code_esp/spi_master_test/build/CMakeFiles/bootloader.rule"
+			"file" : "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/CMakeFiles/bootloader.rule"
 		},
 		{
-			"file" : "E:/code_esp/spi_master_test/build/CMakeFiles/bootloader-complete.rule"
+			"file" : "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/CMakeFiles/bootloader-complete.rule"
 		},
 		{
-			"file" : "E:/code_esp/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+			"file" : "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
 		},
 		{
-			"file" : "E:/code_esp/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+			"file" : "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
 		},
 		{
-			"file" : "E:/code_esp/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+			"file" : "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
 		},
 		{
-			"file" : "E:/code_esp/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+			"file" : "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
 		},
 		{
-			"file" : "E:/code_esp/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+			"file" : "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
 		},
 		{
-			"file" : "E:/code_esp/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+			"file" : "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
 		},
 		{
-			"file" : "E:/code_esp/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+			"file" : "C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
 		}
 	],
 	"target" : 

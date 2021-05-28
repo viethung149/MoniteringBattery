@@ -1,4 +1,4 @@
-# Install script for directory: E:/code_esp/spi_master_test/main
+# Install script for directory: C:/Users/ADMIN/Desktop/MoniteringBattery/spi_master_test/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

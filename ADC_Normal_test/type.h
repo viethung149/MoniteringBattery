@@ -120,7 +120,7 @@ union floatToByte
 //-------------------- define UART TX --------------------------------------
 #define SIZE_BUFFER_TX     150
 //-------------------- define UART RX --------------------------------------
-#define SIZE_BUFFER_RX     1000
+#define SIZE_BUFFER_RX     6
 //---------------------- pheripheral --------------------------------
 #define SIZE_PHERIPHERAL 16
 #define RELAY_1     0

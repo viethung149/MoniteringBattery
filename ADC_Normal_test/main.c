@@ -16,7 +16,7 @@ float voltage_module1[SIZE_MODULE_1]={0};
 float voltage_module2[SIZE_MODULE_2]={0};
 float current_voltage[SIZE_CURRENT] ={0};
 float current_a[SIZE_CURRENT]={0};
-
+BYTE rx_data = 0x00;
 Status IN_CHARGING =  OFF;
 Status IN_DISCHARGING =  OFF;
 
@@ -50,7 +50,8 @@ B_Voltage_status Flag_emer[SIZE_EMER] = {NORMAL};
 BYTE buffer_tx_uart[SIZE_BUFFER_TX]={0};
 BYTE buffer_tx_spi[SIZE_BUFFER_TX]={0};
 BYTE buffer_rx[SIZE_BUFFER_RX]={0};
-
+int index_bfrx =0;
+Status Read_uart_done=OFF;
 uint16_t PIN_SELECT_MODULE1[]={ENABLE_MODULE_1, 
 															 S0_MODULE_1,
 															 S1_MODULE_1,
@@ -82,7 +83,6 @@ int temp_ratio[]={TEM1_P1,
 
 //--uart--//
 char RX_buffer[1000]={0};
-int index_rx_buffer=0;
 
 //--adc--//
 BitAction READ_ADC_FLAG = Bit_RESET;
@@ -229,6 +229,7 @@ void process_package1(void);
 void process_package2(void);
 void process_fan1(void);
 void process_fan2(void);
+void check_buffer_rx(BYTE buffer_rx[], int size);
 ///* USER CODE BEGIN PFP */
 ///* Private function prototypes -----------------------------------------------*/
 struct __FILE
@@ -267,8 +268,8 @@ int fputc(int ch, FILE *f) {
 void TIM2_IRQHandler(void) {
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)// kiem tra xem co ngat cua tim 2 bat chua
 	{	
-
-		TIM_Cmd(TIM2,DISABLE);	
+    printf("IN TIMER READ ADC \n");
+		//TIM_Cmd(TIM2,DISABLE);	
 		if(READ_ADC_FLAG == Bit_RESET )
 		{	
 			// get temperature ------------------------------------------------------------------------------------------------
@@ -311,7 +312,7 @@ void TIM2_IRQHandler(void) {
 				update_discharge();
 			}
 		}
-		TIM_Cmd(TIM2,ENABLE);
+		//TIM_Cmd(TIM2,ENABLE);
 		READ_ADC_FLAG=Bit_SET;
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);//xoa co  ngat nho thanh  ghi pending bit
 		}
@@ -328,15 +329,19 @@ void TIM5_IRQHandler(void) {
 		if(overall_cnt == MAX_READ){
 			if(btn_package1_cnt > 10){
 				process_package1();
+				package_human();
 			}
 			else if(btn_package2_cnt > 10){
 				process_package2();
+				package_human();
 			}
 			else if(btn_fan1_cnt >10){
 			  process_fan1();
+				package_human();
 			}
 			else if(btn_fan2_cnt >10){
 				process_fan2();
+				package_human();
 			}
 			btn_package1_cnt =0;
 			btn_package2_cnt = 0;
@@ -347,7 +352,11 @@ void TIM5_IRQHandler(void) {
 		TIM_ClearITPendingBit(TIM5, TIM_IT_Update);//xoa co  ngat nho thanh  ghi pending bit
 	}
 }
-
+void reset_buffer_rx(BYTE buffer_rx[],int size){
+	for(int i =0;i<size;i++){
+		buffer_rx[i] = 0x00;
+	}
+}
 int main()
 {
 	printf("Test ADC /n");
@@ -372,13 +381,10 @@ int main()
 	{
 	  if(READ_ADC_FLAG == Bit_SET)
 		{
-			TIM_Cmd(TIM2,DISABLE);
-			
-      //for(int i =0 ;i<16; i++){
-      //printf("Voltage %d read is %1.3f \n",i+1,voltage_module1[i]*battery_temp_ratio[i]);
-      //}
+			 printf("IN CHECK INFOR SEND UPDATE \n");
+			//TIM_Cmd(TIM2,DISABLE);
+			//TIM_Cmd(TIM5,DISABLE);
 			//when read successfully ADC send packet Uart about the information of the sensor (voltage, current_voltage, temperature)
-			//Send
 			check_current();
 			check_voltage();
 			check_temperature();
@@ -390,8 +396,15 @@ int main()
 				package_infor();
 				counter_charge = 0;
 			}
-			TIM_Cmd(TIM2,ENABLE);
+			//TIM_Cmd(TIM2,ENABLE);
+			//TIM_Cmd(TIM5,ENABLE);
 			READ_ADC_FLAG = Bit_RESET;
+		}
+		if(Read_uart_done == ON){
+			 printf("IN UPDATE RELAY FROM SOLFWARE \n");
+			Read_uart_done = OFF;
+			check_buffer_rx(buffer_rx,SIZE_BUFFER_RX);
+			//reset_buffer_rx(buffer_rx,SIZE_BUFFER_RX);
 		}
 	}
 	return 0;
@@ -448,8 +461,6 @@ void process_package1(void){
 				Flag_pheripheral[RELAY_1] = OFF;
 			}
 		}
-		package_human();
-		//send the packet
 		printf("press button package 1 \n");
 }
 void process_package2(void){
@@ -467,8 +478,6 @@ if(Flag_pheripheral[RELAY_2] == OFF && FAIL_VOLTAGE_P2 == OFF && FAIL_CURRENT_P2
 						Flag_pheripheral[RELAY_2] = OFF;
 					}
 				}
-				package_human();
-				//send the packet
 				printf("press button package 2 \n");
 }
 void process_fan1(void){
@@ -486,8 +495,6 @@ void process_fan1(void){
 					Flag_pheripheral[FAN_1] = OFF;
 				}
 			}
-			package_human();
-			//send the packet
 			printf("press button Fan1 \n");
 }
 void process_fan2(void){
@@ -504,7 +511,89 @@ void process_fan2(void){
 			Flag_pheripheral[FAN_2] = OFF;
 	  }
   }
-	package_human();
-			//send the packet
 	printf("press button Fan2 \n");
+}
+// read uart
+void USART1_IRQHandler(void)
+{
+	while(USART_GetITStatus(USART1,USART_IT_RXNE)==1)
+	{
+			rx_data = USART_ReceiveData(USART1);
+		  if(rx_data >= 0x01 && rx_data <= 0x04){
+			Read_uart_done=ON;
+			}
+	}
+}
+void check_buffer_rx(BYTE buffer_rx[], int size){
+//	if(buffer_rx[0] != 'R' && buffer_rx[0] != 'F') return;
+//	if(buffer_rx[4] != '\r' || buffer_rx[5] != '\n') return;
+//	BYTE _crc_test = buffer_rx[0] + buffer_rx[1] + buffer_rx[2];
+//	if(_crc_test != buffer_rx[3]) return;
+//	if(buffer_rx[1] == '1'){
+//		buffer_rx[2] == 0x01? GPIO_ResetBits(GPIOC,GPIO_Pin_2): GPIO_SetBits(GPIOC,GPIO_Pin_2);
+//		Flag_pheripheral[RELAY_1] = buffer_rx[2] == 0x01?ON:OFF;
+//		printf("attemp relay 1 \n");
+//	}
+//	else if(buffer_rx[1] == '2'){
+//		buffer_rx[2] == 0x01? GPIO_ResetBits(GPIOC,GPIO_Pin_3): GPIO_SetBits(GPIOC,GPIO_Pin_3);
+//		Flag_pheripheral[RELAY_2] = buffer_rx[2] == 0x01?ON:OFF;
+//		printf("attemp relay 2 \n");
+//	}
+//	else if(buffer_rx[1] == '3'){
+//		buffer_rx[2] == 0x01? GPIO_ResetBits(GPIOC,GPIO_Pin_4): GPIO_SetBits(GPIOC,GPIO_Pin_4);
+//		Flag_pheripheral[FAN_1] = buffer_rx[2] == 0x01?ON:OFF;
+//		printf("attemp relay 3 \n");
+//	}
+//	else if(buffer_rx[1] == '4'){
+//		buffer_rx[2] == 0x01? GPIO_ResetBits(GPIOC,GPIO_Pin_5): GPIO_SetBits(GPIOC,GPIO_Pin_5);
+//		Flag_pheripheral[FAN_2] = buffer_rx[2] == 0x01?ON:OFF;
+//		printf("attemp relay 4 \n");
+//	}
+//	package_human();
+//	
+	if(rx_data == 0x01){
+		if(Flag_pheripheral[RELAY_1] == OFF && FAIL_CURRENT_P1 == OFF && FAIL_TEMPERATURE_P1 == OFF && FAIL_TEMPERATURE_P1 ==OFF){
+			GPIO_ResetBits(GPIOC,GPIO_Pin_2);
+			Flag_pheripheral[RELAY_1] =ON;
+		}
+		else if(Flag_pheripheral[RELAY_1] == ON){
+			GPIO_SetBits(GPIOC,GPIO_Pin_2);
+			Flag_pheripheral[RELAY_1] =OFF;
+		}
+		printf("attemp relay 1 \n");
+	}
+	else if(rx_data == 0x02 ){
+		if(Flag_pheripheral[RELAY_2] == OFF && FAIL_CURRENT_P2 == OFF && FAIL_TEMPERATURE_P2 == OFF && FAIL_TEMPERATURE_P2 ==OFF){
+			GPIO_ResetBits(GPIOC,GPIO_Pin_3);
+			Flag_pheripheral[RELAY_2] =ON;
+		}
+		else if(Flag_pheripheral[RELAY_2] == ON){
+			GPIO_SetBits(GPIOC,GPIO_Pin_3);
+			Flag_pheripheral[RELAY_2] =OFF;
+		}
+		printf("attemp relay 2 \n");
+	}
+	else if(rx_data == 0x03){
+	 if(Flag_pheripheral[FAN_1] == OFF ){
+			GPIO_ResetBits(GPIOC,GPIO_Pin_4);
+			Flag_pheripheral[FAN_1] =ON;
+		}
+		else if(Flag_pheripheral[FAN_1] == ON && FAIL_TEMPERATURE_P1 == OFF){
+			GPIO_SetBits(GPIOC,GPIO_Pin_4);
+			Flag_pheripheral[FAN_1] =OFF;
+		}
+		printf("attemp relay 3 \n");
+	}
+	else if(rx_data == 0x04){
+		 if(Flag_pheripheral[FAN_2] == OFF ){
+			GPIO_ResetBits(GPIOC,GPIO_Pin_5);
+			Flag_pheripheral[FAN_2] =ON;
+		}
+		else if(Flag_pheripheral[FAN_2] == ON && FAIL_TEMPERATURE_P2 == OFF){
+			GPIO_SetBits(GPIOC,GPIO_Pin_5);
+			Flag_pheripheral[FAN_2] =OFF;
+		}
+		printf("attemp relay 4 \n");
+	}
+	package_human();
 }

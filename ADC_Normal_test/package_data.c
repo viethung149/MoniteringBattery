@@ -148,7 +148,7 @@ void package_end (BYTE buffer_tx[],int size_buffer,int startIndex){
 void package_data_human(Status Flag_pheripheral[],int size_flag_pheripheral,BYTE buffer_tx[],int size_buffer_tx,int startIndex){
 	for(int i =0 ;i < (size_flag_pheripheral / 8);i++){
 				BYTE temp_byte = 0x00 ;
-	      //byte 1 package, byte 2 package 2, byte 3 fan1, byte 4 fan2
+		//byte 1: bit 8 package, bit 7 package 2, bit 6 3 fan1, bit 5 fan2
 				for(int j = i*8;j< i*8+8;j++){
 					BYTE temp_status = Flag_pheripheral[j] == ON ? 0x01 : 0x00;
 					temp_byte |= (temp_status<<(j%8));

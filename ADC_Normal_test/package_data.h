@@ -30,7 +30,7 @@ extern B_Voltage_status Flag_emer[];
 
 #define START_HEADER_HUMAN 0
 #define START_DATA_HUMAN 1
-#define START_CRC_HUMAN 3
+#define START_CRC_HUMAN 5
 #define START_END_HUMAN 134
 
 #define START_HEADER_EMER 0

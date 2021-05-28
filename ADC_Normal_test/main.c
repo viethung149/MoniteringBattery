@@ -11,6 +11,7 @@
 #include "package_data.h"
 #include "spi.h"
 #include "input_pin.h"
+#define MAX_READ 40 // 20 times mean 5ms*20 = 100ms ==> result what button was pressed
 float voltage_module1[SIZE_MODULE_1]={0};
 float voltage_module2[SIZE_MODULE_2]={0};
 float current_voltage[SIZE_CURRENT] ={0};
@@ -30,8 +31,14 @@ Status FAIL_CURRENT_P2 = OFF;
 Status CHANNEL_15_IO = ON;
 Status CHANNEL_14_IO = ON;
 Status CHANNEL_13_IO = ON;
-
+//counter read button
+int overall_cnt =0 ;
+int btn_package1_cnt = 0;
+int btn_package2_cnt = 0;
+int btn_fan1_cnt = 0;
+int btn_fan2_cnt = 0;
 int counter_charge =0;
+//status 
 float voltage_package_1 = 0;
 float voltage_package_2 = 0;
 B_Voltage_status Flag_battery[SIZE_BATTERY]={NORMAL};//{MAX,NORMAL,MAX,MIN,NORMAL,MAX,NORMAL,NORMAL}; // 1011 0100
@@ -218,6 +225,10 @@ Status check_temperature(){
 				}
 			}
 }
+void process_package1(void);
+void process_package2(void);
+void process_fan1(void);
+void process_fan2(void);
 ///* USER CODE BEGIN PFP */
 ///* Private function prototypes -----------------------------------------------*/
 struct __FILE
@@ -305,6 +316,37 @@ void TIM2_IRQHandler(void) {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);//xoa co  ngat nho thanh  ghi pending bit
 		}
 }
+////--------------------------------------------------------------------------------------------
+void TIM5_IRQHandler(void) {
+	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET)// kiem tra xem co ngat cua tim 2 bat chua
+	{	
+		overall_cnt++;
+		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_2) == Bit_SET) btn_package1_cnt++;
+		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_3) == Bit_SET) btn_package2_cnt++;
+		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_4) == Bit_SET) btn_fan1_cnt++;
+		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_7) == Bit_SET) btn_fan2_cnt++;
+		if(overall_cnt == MAX_READ){
+			if(btn_package1_cnt > 10){
+				process_package1();
+			}
+			else if(btn_package2_cnt > 10){
+				process_package2();
+			}
+			else if(btn_fan1_cnt >10){
+			  process_fan1();
+			}
+			else if(btn_fan2_cnt >10){
+				process_fan2();
+			}
+			btn_package1_cnt =0;
+			btn_package2_cnt = 0;
+			btn_fan1_cnt = 0;
+			btn_fan2_cnt = 0;
+			overall_cnt =0;
+		}
+		TIM_ClearITPendingBit(TIM5, TIM_IT_Update);//xoa co  ngat nho thanh  ghi pending bit
+	}
+}
 
 int main()
 {
@@ -322,6 +364,7 @@ int main()
 	STATUS_pin_peripheral_config();
 	STATUS_off_all_peripheral();
 	TIMER_interupt_config();
+	TIMER_read_button(5);
 	SPI_pin_config();
 	SPI_init();
 	SPI_pin_nss();
@@ -350,164 +393,9 @@ int main()
 			TIM_Cmd(TIM2,ENABLE);
 			READ_ADC_FLAG = Bit_RESET;
 		}
-		// read pin 2 package 1
-		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_2) == Bit_SET){
-			Dellay_ms_timer4(200);
-				if(Flag_pheripheral[RELAY_1] == OFF && FAIL_VOLTAGE_P1 == OFF && FAIL_CURRENT_P1 == OFF && FAIL_TEMPERATURE_P1 == OFF )
-				{
-					if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_2) == Bit_SET){
-						GPIO_ResetBits(GPIOC, GPIO_Pin_2);
-						Flag_pheripheral[RELAY_1] = ON;
-					}
-					
-				}
-				else
-				{
-					if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_2) == Bit_RESET){
-						GPIO_SetBits(GPIOC, GPIO_Pin_2);
-						Flag_pheripheral[RELAY_1] = OFF;
-					}
-				}
-				package_human();
-				//send the packet
-				printf("press button package 1 \n");
-		}
-		// read pin 3 package 2
-		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_3) == Bit_SET){
-			Dellay_ms_timer4(20);
-				if(Flag_pheripheral[RELAY_2] == OFF && FAIL_VOLTAGE_P2 == OFF && FAIL_CURRENT_P2 == OFF && FAIL_TEMPERATURE_P2 == OFF )
-				{
-					if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_3) == Bit_SET){
-						GPIO_ResetBits(GPIOC, GPIO_Pin_3);
-						Flag_pheripheral[RELAY_2] = ON;
-					}
-				}
-				else
-				{
-					if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_3) == Bit_RESET){
-						GPIO_SetBits(GPIOC, GPIO_Pin_3);
-						Flag_pheripheral[RELAY_2] = OFF;
-					}
-				}
-				package_human();
-				//send the packet
-				printf("press button package 2 \n");
-		}
-		// read pin 4 fan 1
-		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_4) == Bit_SET){
-			Dellay_ms_timer4(200);
-			if(Flag_pheripheral[FAN_1] == OFF )
-			{
-				if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_4) == Bit_SET){
-						GPIO_ResetBits(GPIOC, GPIO_Pin_4);
-						Flag_pheripheral[FAN_1] = ON;
-					}
-			}
-			else if(FAIL_TEMPERATURE_P1 == OFF)
-			{
-				if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_4) == Bit_RESET){
-					GPIO_SetBits(GPIOC, GPIO_Pin_4);
-					Flag_pheripheral[FAN_1] = OFF;
-				}
-			}
-			package_human();
-			//send the packet
-			printf("press button Fan1 \n");
-		}
-		//read pin 7 fan2 
-		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_7) == Bit_SET){
-			Dellay_ms_timer4(200);
-			if(Flag_pheripheral[FAN_2] == OFF)
-		{
-			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_5) == Bit_SET){
-				GPIO_ResetBits(GPIOC, GPIO_Pin_5);
-				Flag_pheripheral[FAN_2] = ON;
-			}
-		}
-			else if (FAIL_TEMPERATURE_P2 == OFF)
-		{
-			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_5) == Bit_RESET){
-				GPIO_SetBits(GPIOC, GPIO_Pin_5);
-				Flag_pheripheral[FAN_2] = OFF;
-			}
-		}
-		package_human();
-		//send the packet
-		printf("press button Fan2 \n");
-		}
 	}
 	return 0;
 }
-//----------------------------------------------------------------------------------------------------
-// handler external 2 PCD2
-// control Package 1 
-// Led PC 2
-//void EXTI2_IRQHandler(void){
-//  if(EXTI_GetITStatus(EXTI_Line2) != RESET)
-//  {
-//		
-//    EXTI_ClearITPendingBit(EXTI_Line2);
-//  }
-//}
-////----------------------------------------------------------------------------------------------------
-//// handler external 3 PCD3
-//// control Package 2 
-//// Led PC 2
-//void EXTI3_IRQHandler(void){
-//  if(EXTI_GetITStatus(EXTI_Line3) != RESET)
-//  {
-//		if(Flag_pheripheral[RELAY_2] == OFF && FAIL_VOLTAGE_P2 == OFF && FAIL_CURRENT_P2 == OFF && FAIL_TEMPERATURE_P2 == OFF )
-//		{
-//			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_3) == Bit_SET){
-//			  Dellay_us(10000);
-//				GPIO_ResetBits(GPIOC, GPIO_Pin_3);
-//				Flag_pheripheral[RELAY_2] = ON;
-//			}
-//		}
-//		else
-//		{
-//			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_3) == Bit_RESET){
-//				Dellay_us(10000);
-//				GPIO_SetBits(GPIOC, GPIO_Pin_3);
-//				Flag_pheripheral[RELAY_2] = OFF;
-//			}
-//		}
-//		package_human();
-//		//send the packet
-//		printf("press button package 2 \n");
-//    EXTI_ClearITPendingBit(EXTI_Line3);
-//  }
-//}
-////----------------------------------------------------------------------------------------------------
-//// handler external 4 PCD4
-//// control Fan1 
-//// Led PC 3
-//void EXTI4_IRQHandler(void){
-//  if(EXTI_GetITStatus(EXTI_Line4) != RESET)
-//  {
-//		if(Flag_pheripheral[FAN_1] == OFF )
-//		{
-//			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_4) == Bit_SET){
-//					Dellay_us(10000);
-//					GPIO_ResetBits(GPIOC, GPIO_Pin_4);
-//					Flag_pheripheral[FAN_1] = ON;
-//				}
-//		}
-//		else if(FAIL_TEMPERATURE_P1 == OFF)
-//		{
-//			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_4) == Bit_RESET){
-//				Dellay_us(10000);
-//				GPIO_SetBits(GPIOC, GPIO_Pin_4);
-//				Flag_pheripheral[FAN_1] = OFF;
-//			}
-//		}
-//		package_human();
-//		//send the packet
-//		printf("press button Fan1 \n");
-//    EXTI_ClearITPendingBit(EXTI_Line4);
-//  }
-//}
-////----------------------------------------------------------------------------------------------------
 //// handler external 5 PD7
 //// control Fan2 
 //// Led PC 4
@@ -544,3 +432,79 @@ void EXTI9_5_IRQHandler(void){
   }
 }
 //----------------------------------------------------------------------------------------------------
+
+void process_package1(void){
+	if(Flag_pheripheral[RELAY_1] == OFF && FAIL_VOLTAGE_P1 == OFF && FAIL_CURRENT_P1 == OFF && FAIL_TEMPERATURE_P1 == OFF )
+		{
+			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_2) == Bit_SET){
+				GPIO_ResetBits(GPIOC, GPIO_Pin_2);
+				Flag_pheripheral[RELAY_1] = ON;
+			}
+		}
+		else
+		{
+			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_2) == Bit_RESET){
+				GPIO_SetBits(GPIOC, GPIO_Pin_2);
+				Flag_pheripheral[RELAY_1] = OFF;
+			}
+		}
+		package_human();
+		//send the packet
+		printf("press button package 1 \n");
+}
+void process_package2(void){
+if(Flag_pheripheral[RELAY_2] == OFF && FAIL_VOLTAGE_P2 == OFF && FAIL_CURRENT_P2 == OFF && FAIL_TEMPERATURE_P2 == OFF )
+				{
+					if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_3) == Bit_SET){
+						GPIO_ResetBits(GPIOC, GPIO_Pin_3);
+						Flag_pheripheral[RELAY_2] = ON;
+					}
+				}
+				else
+				{
+					if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_3) == Bit_RESET){
+						GPIO_SetBits(GPIOC, GPIO_Pin_3);
+						Flag_pheripheral[RELAY_2] = OFF;
+					}
+				}
+				package_human();
+				//send the packet
+				printf("press button package 2 \n");
+}
+void process_fan1(void){
+		if(Flag_pheripheral[FAN_1] == OFF )
+			{
+				if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_4) == Bit_SET){
+						GPIO_ResetBits(GPIOC, GPIO_Pin_4);
+						Flag_pheripheral[FAN_1] = ON;
+					}
+			}
+			else if(FAIL_TEMPERATURE_P1 == OFF)
+			{
+				if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_4) == Bit_RESET){
+					GPIO_SetBits(GPIOC, GPIO_Pin_4);
+					Flag_pheripheral[FAN_1] = OFF;
+				}
+			}
+			package_human();
+			//send the packet
+			printf("press button Fan1 \n");
+}
+void process_fan2(void){
+	if(Flag_pheripheral[FAN_2] == OFF)
+	{
+		if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_5) == Bit_SET){
+			GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+			Flag_pheripheral[FAN_2] = ON;
+		}
+	}
+	else if (FAIL_TEMPERATURE_P2 == OFF){
+		if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_5) == Bit_RESET){
+			GPIO_SetBits(GPIOC, GPIO_Pin_5);
+			Flag_pheripheral[FAN_2] = OFF;
+	  }
+  }
+	package_human();
+			//send the packet
+	printf("press button Fan2 \n");
+}

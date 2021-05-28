@@ -19,3 +19,24 @@ void TIMER_interupt_config(void)
 	nvic_struct.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&nvic_struct);
 }
+
+void TIMER_read_button(int period)
+{
+	TIM_TimeBaseInitTypeDef tim_struct;
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);
+	tim_struct.TIM_Period = 4199;
+	int presscaler = 20*period;
+	tim_struct.TIM_Prescaler = presscaler;
+	//tim_struct.TIM_ClockDivision = 0;
+	tim_struct.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_TimeBaseInit(TIM5, &tim_struct);
+	TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);
+	TIM_Cmd(TIM5, ENABLE	);
+	TIM_ClearITPendingBit(TIM5, TIM_IT_Update);	
+	NVIC_InitTypeDef nvic_struct;
+	nvic_struct.NVIC_IRQChannel = TIM5_IRQn;
+	nvic_struct.NVIC_IRQChannelPreemptionPriority =0;
+	nvic_struct.NVIC_IRQChannelSubPriority =1;
+	nvic_struct.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&nvic_struct);
+}

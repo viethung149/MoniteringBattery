@@ -19,6 +19,7 @@
 ".\objects\package_data.o"
 ".\objects\stm32f4xx_spi.o"
 ".\objects\spi.o"
+".\objects\input_pin.o"
 ".\objects\startup_stm32f40_41xxx.o"
 ".\objects\retarget_io.o"
 --strict --scatter ".\Objects\adc.sct"

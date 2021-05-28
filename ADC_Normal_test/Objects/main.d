@@ -47,3 +47,4 @@
 .\objects\main.o: package_data.h
 .\objects\main.o: spi.h
 .\objects\main.o: spi.h
+.\objects\main.o: input_pin.h

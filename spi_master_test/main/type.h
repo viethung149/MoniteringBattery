@@ -20,16 +20,47 @@
 #define SPI_ESP_ADDING             82
 #define SPI_ESP_CRC                90
 #define SPI_ESP_END                91
-#define NUMBER_VOLTAGE     8
-#define NUMBER_TEMPERATURE 8
 #define NUMBER_CURRENT     3// actually is 3 but use 8 for byte package
-#define NUMBER_PHERIPHERAL 8 // actually is 4 but use 8 for bytes package
+#define NUMBER_PHERIPHERAL 4 // actually is 4 but use 8 for bytes package
+#define NUMBER_CELLS       8
 //-------------------------------- union extract float to byte --------------
 union floatToByte
 {
 	float variableFloat;
 	char variableByte[4];
 };
+typedef enum{
+	DISCONNECT =0,
+	CONNECT,
+	CHARGE,
+	DISCHARGE
+}CONNECT_STATUS;
+//-------------------current -------------------
+#define MAX_CURRENT 3
+
+
 //----------------- BYTE
 typedef unsigned char   BYTE;
+// ----------------TABLE PACKAGE -----------------
+#define NUMBER_PACKAGE 3
+#define PACKAGE1 0
+#define PACKAGE2 1
+#define ALL_SYSTEM 2
+
+//--------------------- pheripheral ------------------
+#define RELAY1_PACKAGE1 0
+#define RELAY2_PACKAGE2 1
+#define RELAY3_FAN1 2
+#define RELAY4_FAN2 3
+// ---------------------BATTERRY --------------------------
+#define BATTERY_1 0
+#define BATTERY_2 1
+#define BATTERY_3 2
+#define BATTERY_4 3
+#define BATTERY_5 4
+#define BATTERY_6 5
+#define BATTERY_7 6
+#define BATTERY_8 7
+
+
 #endif

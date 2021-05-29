@@ -33,4 +33,5 @@ extern WORD_ALIGNED_ATTR uint8_t spi_rx_static_buf[];
 
 spi_slave_transaction_t slave_config();
 void slave_read (uint8_t spi_rx_static_buf[], spi_slave_transaction_t rcv, int times_read);
+
 #endif

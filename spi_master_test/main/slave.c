@@ -46,8 +46,8 @@ void slave_read (uint8_t spi_rx_static_buf[], spi_slave_transaction_t rcv,int ti
     rcv.length = SIZE_BUFFER * 8;
     ESP_LOGI(TAG, "... Receiving in time %d \n",times_read);
     ESP_ERROR_CHECK(spi_slave_transmit(VSPI_HOST, &rcv,portMAX_DELAY));
-    for(int i =0;i<SIZE_BUFFER;i++ ){
-        printf("Byte %d is: %X \n",i,spi_rx_static_buf[i]&0xFF);
-    }
+    // for(int i =0;i<SIZE_BUFFER;i++ ){
+    //     printf("Byte %d is: %X \n",i,spi_rx_static_buf[i]&0xFF);
+    // }
     printf("lenght is : %d \n",rcv.trans_len);
 }

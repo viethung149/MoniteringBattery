@@ -41,7 +41,7 @@ void app_main(void *ignore)
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
     ESP_LOGI(TAG, ">> test_spi_task");
     spi_slave_transaction_t rcv = slave_config();
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 100; i++)
     {
         slave_read(spi_rx_static_buf, rcv, i + 1);
 
@@ -65,8 +65,22 @@ void app_main(void *ignore)
                                 blancing_package,
                                 connect_package,
                                 warning_package,NUMBER_PACKAGE);
-            printf("json file: %s \n",json_battery);
-            printf("json file: %s \n",json_package);
+
+            char* json_pheripheral = create_pheripheral_infor(status_pheripheral);
+
+            char* json_temperature = create_battery_temperature(temperature,NUMBER_CELLS);
+            char* json_voltage = create_battery_voltage(voltage,NUMBER_CELLS);
+            char* json_current = create_battery_current(current_package, NUMBER_CURRENT);
+            char* json_voltage_warning = create_voltage_warning(status_voltage, NUMBER_CELLS);
+            char* json_temperature_warning = create_temperature_warning(status_temperature, NUMBER_CELLS);
+            printf("json infor: %s \n",json_battery);
+            printf("json package: %s \n",json_package);
+            printf("json pheripheral: %s \n",json_pheripheral);
+            printf("json temperature: %s \n",json_temperature);
+            printf("json voltage: %s \n",json_voltage);
+            printf("json current: %s \n",json_current);
+            printf("json status voltage: %s \n",json_voltage_warning);
+            printf("json status temperature: %s \n",json_temperature_warning);
 
         }
         else
@@ -74,7 +88,7 @@ void app_main(void *ignore)
             counter_read_fail++;
             ESP_LOGI(TAG, "Received fail format \n");
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
     ESP_LOGI(TAG, "Times read success: %d, Times read fail: %d", counter_read_success, counter_read_fail);
     ESP_LOGI(TAG, "... Removing device.");

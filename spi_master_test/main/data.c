@@ -77,8 +77,8 @@ void get_status_pheripheral(uint8_t spi_rx_static_buf[],bool status_pheripheral[
     ESP_LOGI(TAG,"... in get_status_pheripheral \n");
     BYTE status = spi_rx_static_buf[SPI_ESP_STATUS_PHERIPHERAL];
     for(int i = 0 ;i < size;i++){
-        // true mean wrong voltage
-        // flase mean this is the accepted voltege
+        // true mean ON
+        // flase mean OFF
         status_pheripheral[i] = ( status & 0x01) ==0x01? true:false;
         status >>=1;
     }
@@ -277,7 +277,7 @@ CONNECT_STATUS get_connect_status_all_system(bool status_pheripheral_relay1,
     CONNECT_STATUS status_p1 = get_connect_status_package1(status_pheripheral_relay1,current_package1);
     CONNECT_STATUS status_p2 = get_connect_status_package2(status_pheripheral_relay2,current_package2);
     if(status_p1 == DISCONNECT && status_p2 == DISCONNECT) return DISCONNECT;
-    else if(status_p1 == CONNECT && status_p2 == CONNECT) return CONNECT;
+    else if(status_p1 == CONNECT || status_p2 == CONNECT) return CONNECT;
     else if (status_p1 == DISCHARGE || status_p2 == DISCHARGE) return DISCHARGE;
     else if (status_p1 == CHARGE || status_p2 == CHARGE) return CHARGE;
     else return DISCONNECT;
@@ -320,9 +320,9 @@ bool Warning_package2(float voltage[], float temperature[], float current){
     temperature_package[PACKAGE2]  = get_temperature_package2( temperature);
     temperature_package[ALL_SYSTEM]  = get_temperature_all_system( temperature);
 
-    current_package[PACKAGE1] = current[PACKAGE1];
-    current_package[PACKAGE2] = current[PACKAGE2];
-    current_package[ALL_SYSTEM] = current[ALL_SYSTEM];
+    current_package[PACKAGE1] = current[CURRENT_PACKAGE1];
+    current_package[PACKAGE2] = current[CURRENT_PACKAGE2];
+    current_package[ALL_SYSTEM] = current[CURRENT_ALL_SYSTEM];
 
     blancing_package[PACKAGE1] = get_blancing_package1( blance);
     blancing_package[PACKAGE2] = get_blancing_package2( blance);
@@ -332,7 +332,8 @@ bool Warning_package2(float voltage[], float temperature[], float current){
     connect_package[PACKAGE2] = get_connect_status_package2(status_pheripheral[RELAY2_PACKAGE2], current_package[PACKAGE2]);
     connect_package[ALL_SYSTEM] = get_connect_status_all_system(status_pheripheral[RELAY1_PACKAGE1],
                                                                 current_package[PACKAGE1],
-                                                                status_pheripheral[RELAY2_PACKAGE2], current_package[PACKAGE2],
+                                                                status_pheripheral[RELAY2_PACKAGE2],
+                                                                current_package[PACKAGE2],
                                                                 current_package[ALL_SYSTEM]);
     
     warning_package[PACKAGE1] = Warning_package1(voltage, temperature, current_package[PACKAGE1]);
@@ -359,7 +360,12 @@ void print_infor_table_package(){
     }
     ESP_LOGI("COLUMN 5 ","------------------------------CONNECT--------------------------" );
     for(int i = 0; i<NUMBER_PACKAGE;i++){
-        printf("Connect Package package %d : %s \n",i+1,connect_package[i] == DISCONNECT ?"DISCONNECT":"CONNECT");
+        char* string_status_connect = NULL;
+        if(connect_package[i] == DISCONNECT) string_status_connect ="DISCONNECT";
+        else if(connect_package[i] == CONNECT) string_status_connect ="CONNECT";
+        else if(connect_package[i] == CHARGE) string_status_connect ="CHARGE";
+        else  string_status_connect ="DISCONNECT";
+        printf("Connect Package package %d : %s \n",i+1,string_status_connect);
     }
     ESP_LOGI("COLUMN 6 ","------------------------------WARNING--------------------------" );
     for(int i = 0; i<NUMBER_PACKAGE;i++){

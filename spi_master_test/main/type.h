@@ -37,7 +37,9 @@ typedef enum{
 }CONNECT_STATUS;
 //-------------------current -------------------
 #define MAX_CURRENT 3
-
+#define CURRENT_ALL_SYSTEM 0
+#define CURRENT_PACKAGE1   1
+#define CURRENT_PACKAGE2   2
 
 //----------------- BYTE
 typedef unsigned char   BYTE;

@@ -24,8 +24,12 @@ extern float current_package[];
 extern bool blancing_package[];
 extern CONNECT_STATUS connect_package[];
 extern bool warning_package[];
-char *create_battery_voltage(float* voltage_value, int length);
-char *create_battery_temperature(float* temperature_value, int length);
+char *create_battery_voltage(float* voltage_value, int size);
+char *create_battery_temperature(float* temperature_value, int size);
+char *create_battery_current(float* current_value, int size);
+char *create_voltage_warning(bool* status_voltage,int size);
+char *create_temperature_warning(bool* status_temperature,int size);
+char *create_pheripheral_connect(CONNECT_STATUS* status_connect,int size);
 char *create_battery_status(bool* status,int lenght);
 int lenght_of_json(char* string_json);
 // create JSON for battery table
@@ -42,4 +46,5 @@ char* create_package_infor(float* capacity,
                            CONNECT_STATUS* status_connect,
                            bool* status_warning,
                            int size);
+char* create_pheripheral_infor(bool* status_pheripheral);
 #endif

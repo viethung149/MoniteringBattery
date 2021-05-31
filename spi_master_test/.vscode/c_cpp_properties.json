@@ -50,7 +50,8 @@
                 "${IDF_PATH}/components/nghttp/nghttp2/third-party/http-parser",
                 "${IDF_PATH}/components/log/include",
                 "C:/Users/ADMIN/Desktop/esp-idf-2/components/esp_ringbuf/include",
-                "C:/Users/ADMIN/Desktop/esp-idf-2/components/newlib/platform_include"
+                "C:/Users/ADMIN/Desktop/esp-idf-2/components/newlib/platform_include",
+                "C:/Users/ADMIN/Desktop/esp-idf-2/components/esp_http_client/include"
             ],
             "defines": [],
             "cStandard": "c11",

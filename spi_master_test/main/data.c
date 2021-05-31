@@ -23,7 +23,7 @@ void get_temperature(uint8_t spi_rx_static_buf[], float temperature[],int size){
             temp.variableByte[j-start_index] = spi_rx_static_buf[j];
         }
         temperature[i] = temp.variableFloat;
-        printf("temperature %d is %f \n",i,temperature[i]);
+        //printf("temperature %d is %f \n",i,temperature[i]);
         start_index +=4;
     }
 }
@@ -69,7 +69,7 @@ void get_status_current(uint8_t spi_rx_static_buf[],bool status_current[],int si
         // true mean wrong voltage
         // flase mean this is the accepted voltege
         status_current[i] = (status & 0x01) ==0x01? true:false;
-        printf("current status %d is %s \n",i,status_current[i] ==  true?"True":"False");
+        //printf("current status %d is %s \n",i,status_current[i] ==  true?"True":"False");
         status >>=1;
     }
 }
@@ -312,6 +312,7 @@ bool Warning_package2(float voltage[], float temperature[], float current){
  void update_table_package(float voltage[], float temperature[], float current[],
                                      bool blance[], bool status_pheripheral[])
 {
+    ESP_LOGI(TAG_STM,"Update table package");
     capacity_package[PACKAGE1] = get_voltage_package1( voltage);
     capacity_package[PACKAGE2] = get_voltage_package2( voltage);
     capacity_package[ALL_SYSTEM] = get_voltage_all_system( voltage);

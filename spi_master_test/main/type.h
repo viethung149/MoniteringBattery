@@ -64,5 +64,8 @@ typedef unsigned char   BYTE;
 #define BATTERY_7 6
 #define BATTERY_8 7
 
-
+//--------------------- RECEIVE -------------------
+#define TAG_STM "REQUEST TO STM"
+#define TAG_WIFI "WIFI CONNECTION"
+#define TAG_FIREBASE "SEND TO FIREBASE"
 #endif

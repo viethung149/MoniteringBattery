@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>hung here</title>
+</head>
+<body>
+	<p>Hung is here</p>
+<script type="text/javascript">
+	function httpGet(theUrl)
+	{
+	    var xmlHttp = new XMLHttpRequest();
+	    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+	    xmlHttp.send( null );
+	    return xmlHttp.responseText;
+	}
+	var string = httpGet("https://monitoringbattery-5496a-default-rtdb.asia-southeast1.firebasedatabase.app/voltages.json");
+	var json = JSON.parse(string);
+	console.log(json);
+</script>
+<script type="text/javascript">
+	function httpPost(TheUrl){
+		var req = new XMLHttpRequest();
+		req.open("POST", TheUrl, false);
+		req.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+		var jsonBody = {
+		  "temperature1": "30.1",
+		  "temperature2": "29.0",
+		  "temperature3": "30.4",
+		  "temperature4": "30.5",
+		  "temperature5": "31.2",
+		  "temperature6": "29.1",
+		  "temperature7": "28",
+		  "temperature8": "30.1"
+		};
+	console.log(typeof jsonBody);
+	req.send(JSON.stringify(jsonBody));
+	console.log(req.status);
+	console.log(req.responseText);
+	}
+httpPost("https://monitoringbattery-5496a-default-rtdb.asia-southeast1.firebasedatabase.app/temperature.json");
+</script>
+</body>
+</html>

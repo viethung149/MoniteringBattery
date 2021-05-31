@@ -1,0 +1,99 @@
+{
+    "CellsInformation": [
+        {
+            "Balance": "Normal",
+            "Temperature": 118.26036071777344,
+            "Voltage": 4.67180585861206,
+            "WarningTemperature": "Emergency",
+            "WarningVoltage": "Emergency"
+        },
+        {
+            "Balance": "Blancing",
+            "Temperature": 176.48464965820312,
+            "Voltage": 2.4960365295410156,
+            "WarningTemperature": "Emergency",
+            "WarningVoltage": "Emergency"
+        },
+        {
+            "Balance": "Normal",
+            "Temperature": 186.65228271484375,
+            "Voltage": 4.948981761932373,
+            "WarningTemperature": "Emergency",
+            "WarningVoltage": "Emergency"
+        },
+        {
+            "Balance": "Blancing",
+            "Temperature": 217.42735290527344,
+            "Voltage": 2.288034439086914,
+            "WarningTemperature": "Emergency",
+            "WarningVoltage": "Emergency"
+        },
+        {
+            "Balance": "Blancing",
+            "Temperature": 147.66925048828125,
+            "Voltage": 4.669522762298584,
+            "WarningTemperature": "Emergency",
+            "WarningVoltage": "Emergency"
+        },
+        {
+            "Balance": "Blancing",
+            "Temperature": 192.49896240234375,
+            "Voltage": 2.5284066200256348,
+            "WarningTemperature": "Emergency",
+            "WarningVoltage": "Emergency"
+        },
+        {
+            "Balance": "Blancing",
+            "Temperature": 192.7528533935547,
+            "Voltage": 4.731553077697754,
+            "WarningTemperature": "Emergency",
+            "WarningVoltage": "Emergency"
+        },
+        {
+            "Balance": "Blancing",
+            "Temperature": 218.7387237548828,
+            "Voltage": 2.531468391418457,
+            "WarningTemperature": "Emergency",
+            "WarningVoltage": "Emergency"
+        }
+    ],
+    "name": "BatteryCells"
+}
+{
+    "PackagesInformation": [
+        {
+            "Balance": "Normal",
+            "Connect": "DISCONNECT",
+            "Current": 0.16101695597171783,
+            "Temperature": 80.9259719848633,
+            "Voltage": 15.906967163085938,
+            "Warning": "Emergency"
+        },
+        {
+            "Balance": "Blancing",
+            "Connect": "DISCONNECT",
+            "Current": 0,
+            "Temperature": 75.0998306274414,
+            "Voltage": 0.011195716448128223,
+            "Warning": "Normal"
+        },
+        {
+            "Balance": "Normal",
+            "Connect": "DISCONNECT",
+            "Current": -24.969999313354492,
+            "Temperature": 80.9259719848633,
+            "Voltage": 7.959081649780273,
+            "Warning": "Normal"
+        }
+    ],
+    "name": "PackageBattery"
+}
+{
+    "PackagesInformation": {
+        "Relay1-Package1": "OFF",
+        "Relay2-Package2": "OFF",
+        "Relay3-Fan1": "OFF",
+        "Relay4-Fan2": "OFF"
+    },
+    "name": "Pheripheral"
+}

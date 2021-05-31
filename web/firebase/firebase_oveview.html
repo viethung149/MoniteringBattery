@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+
+</head>
+<body>
+	<p id="test"> HI FIREBASE</p>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-firestore.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  var firebaseConfig = {
+    apiKey: "AIzaSyApWX0Q5XlNM2QD42wm1cHENHz3tBO0ook",
+    authDomain: "monitoringbattery-5496a.firebaseapp.com",
+    projectId: "monitoringbattery-5496a",
+    storageBucket: "monitoringbattery-5496a.appspot.com",
+    messagingSenderId: "806090881928",
+    appId: "1:806090881928:web:03c8dec201d2d318e2d83d",
+    measurementId: "G-8204XW61BJ"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+  var p1 = document.getElementById("test");
+  var db = firebase.firestore();
+  db.collection("voltage").get().then((querySnapshot) => {
+  	// querySnapshot.forEach((doc) => {
+  	// 	console.log(`${doc.id} => ${doc.data()}`);
+  	// });
+  	console.log(querySnapshot);
+  });
+  db.collection("users").add({
+    first: "Ada",
+    last: "Lovelace",
+    born: 1815
+  })
+	.then((docRef) => {
+	    console.log("Document written with ID: ", docRef.id);
+	})
+	.catch((error) => {
+	    console.error("Error adding document: ", error);
+	});
+</script>
+</body>
+</html>

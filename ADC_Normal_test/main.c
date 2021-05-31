@@ -48,7 +48,7 @@ B_Voltage_status Flag_battery[SIZE_BATTERY]={NORMAL};//{MAX,NORMAL,MAX,MIN,NORMA
 B_Voltage_status Flag_temp[SIZE_TEMPERATURE]= {NORMAL};//{MAX,MIN,MAX,MIN,NORMAL,MAX,NORMAL,NORMAL};  // 1111 0100
 // check status pheripheral
 Status Flag_pheripheral[SIZE_PHERIPHERAL] ={OFF};
-Status Flag_blancing[SIZE_BATTERY] ={OFF};
+Status Flag_blancing[SIZE_BATTERY] ={OFF,ON,OFF,ON,ON,ON,ON,ON};
 B_Voltage_status Flag_emer[SIZE_EMER] = {NORMAL};
 
 
@@ -89,7 +89,8 @@ int temp_ratio[]={TEM1_P1,
 //--adc--//
 BitAction READ_ADC_FLAG = Bit_RESET;
 void update_charge(){
-		printf("Reading when discharge\n");
+		NVIC_DisableIRQ(EXTI_Line8);
+		printf("Reading when charge\n");
 		if(Flag_pheripheral[RELAY_1] == ON) GPIO_SetBits(GPIOC, GPIO_Pin_2);
 		if(Flag_pheripheral[RELAY_2] == ON) GPIO_SetBits(GPIOC, GPIO_Pin_3);
 		Dellay_us(100);
@@ -117,9 +118,10 @@ void update_charge(){
 			Dellay_us(10);
 		}
 		voltage_package_2 = sum;
-		Dellay_ms_timer4(2000);//500ms
+		Dellay_ms_timer4(1000);//2000ms
 		if(Flag_pheripheral[RELAY_1] == ON) GPIO_ResetBits(GPIOC, GPIO_Pin_2);
 		if(Flag_pheripheral[RELAY_2] == ON) GPIO_ResetBits(GPIOC, GPIO_Pin_3);
+		NVIC_EnableIRQ(EXTI_Line8);
 }
 
 void update_discharge(){
@@ -154,6 +156,7 @@ void check_current(){
 		// check package 1, 2 for turn off relay pin PC 2, PC 3
     FAIL_CURRENT_P1 = OFF;
 		FAIL_CURRENT_P2 = OFF;	
+	  FAIL_CURRENT_ALL = OFF;
 		if(IN_CHARGING == ON){
 				if (current_a[1] > CURRENT_MAX_CHARGE) {
 					GPIO_SetBits(GPIOC, GPIO_Pin_2);
@@ -164,6 +167,13 @@ void check_current(){
 					GPIO_SetBits(GPIOC, GPIO_Pin_3);
 					Flag_pheripheral[RELAY_2] = OFF;
 					FAIL_CURRENT_P2 = ON;
+				} 
+				 if (current_a[0] > CURRENT_MAX_CHARGE) {
+					GPIO_SetBits(GPIOC, GPIO_Pin_2);
+					GPIO_SetBits(GPIOC, GPIO_Pin_3);
+					Flag_pheripheral[RELAY_1] = OFF;
+					Flag_pheripheral[RELAY_2] = OFF;
+					FAIL_CURRENT_ALL = ON;
 				} 
 		}
 		else if(IN_DISCHARGING == ON){
@@ -177,6 +187,13 @@ void check_current(){
 				 Flag_pheripheral[RELAY_2] = OFF;
 				 FAIL_CURRENT_P2 = ON;
 				}
+			  if ((-1)*current_a[0] > CURRENT_MAX_ALL) {
+					GPIO_SetBits(GPIOC, GPIO_Pin_2);
+					GPIO_SetBits(GPIOC, GPIO_Pin_3);
+					Flag_pheripheral[RELAY_1] = OFF;
+					Flag_pheripheral[RELAY_2] = OFF;
+					FAIL_CURRENT_ALL = ON;
+			 } 
 		}
 }
 void check_voltage(){
@@ -329,19 +346,19 @@ void TIM5_IRQHandler(void) {
 		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_4) == Bit_SET) btn_fan1_cnt++;
 		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_7) == Bit_SET) btn_fan2_cnt++;
 		if(overall_cnt == MAX_READ){
-			if(btn_package1_cnt > 10){
+			if(btn_package1_cnt > SENSITIVE_BUTTON){
 				process_package1();
 				package_human();
 			}
-			else if(btn_package2_cnt > 10){
+			else if(btn_package2_cnt > SENSITIVE_BUTTON){
 				process_package2();
 				package_human();
 			}
-			else if(btn_fan1_cnt >10){
+			else if(btn_fan1_cnt >SENSITIVE_BUTTON){
 			  process_fan1();
 				package_human();
 			}
-			else if(btn_fan2_cnt >10){
+			else if(btn_fan2_cnt >SENSITIVE_BUTTON){
 				process_fan2();
 				package_human();
 			}
@@ -435,7 +452,7 @@ void EXTI9_5_IRQHandler(void){
 //----------------------------------------------------------------------------------------------------
 
 void process_package1(void){
-	if(Flag_pheripheral[RELAY_1] == OFF && FAIL_VOLTAGE_P1 == OFF && FAIL_CURRENT_P1 == OFF && FAIL_TEMPERATURE_P1 == OFF )
+	if(Flag_pheripheral[RELAY_1] == OFF && FAIL_VOLTAGE_P1 == OFF && FAIL_CURRENT_P1 == OFF && FAIL_TEMPERATURE_P1 == OFF && FAIL_CURRENT_ALL == OFF)
 		{
 			if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_2) == Bit_SET){
 				GPIO_ResetBits(GPIOC, GPIO_Pin_2);
@@ -452,7 +469,7 @@ void process_package1(void){
 		printf("press button package 1 \n");
 }
 void process_package2(void){
-if(Flag_pheripheral[RELAY_2] == OFF && FAIL_VOLTAGE_P2 == OFF && FAIL_CURRENT_P2 == OFF && FAIL_TEMPERATURE_P2 == OFF )
+if(Flag_pheripheral[RELAY_2] == OFF && FAIL_VOLTAGE_P2 == OFF && FAIL_CURRENT_P2 == OFF && FAIL_TEMPERATURE_P2 == OFF && FAIL_CURRENT_ALL == OFF)
 				{
 					if(GPIO_ReadOutputDataBit(GPIOC,GPIO_Pin_3) == Bit_SET){
 						GPIO_ResetBits(GPIOC, GPIO_Pin_3);

@@ -14,7 +14,7 @@ void TIMER_interupt_config(void)
   //configure interrup timer 2
 	NVIC_InitTypeDef nvic_struct;
 	nvic_struct.NVIC_IRQChannel = TIM2_IRQn;
-	nvic_struct.NVIC_IRQChannelPreemptionPriority =0;
+	nvic_struct.NVIC_IRQChannelPreemptionPriority = 1;
 	nvic_struct.NVIC_IRQChannelSubPriority =1;
 	nvic_struct.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&nvic_struct);
@@ -35,8 +35,8 @@ void TIMER_read_button(int period)
 	TIM_ClearITPendingBit(TIM5, TIM_IT_Update);	
 	NVIC_InitTypeDef nvic_struct;
 	nvic_struct.NVIC_IRQChannel = TIM5_IRQn;
-	nvic_struct.NVIC_IRQChannelPreemptionPriority =0;
-	nvic_struct.NVIC_IRQChannelSubPriority =2;
+	nvic_struct.NVIC_IRQChannelPreemptionPriority =1;
+	nvic_struct.NVIC_IRQChannelSubPriority =0;
 	nvic_struct.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&nvic_struct);
 }

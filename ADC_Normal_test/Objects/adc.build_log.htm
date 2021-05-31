@@ -27,8 +27,84 @@ Project File Date:  05/28/2021
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Target 1'
+compiling uart.c...
+type.h(159): warning:  #1-D: last line of file ends without a newline
+  #endif
+uart.h(12): warning:  #1-D: last line of file ends without a newline
+  #endif
+uart.c(57): warning:  #1-D: last line of file ends without a newline
+  }
+uart.c: 3 warnings, 0 errors
+compiling adc.c...
+type.h(159): warning:  #1-D: last line of file ends without a newline
+  #endif
+adc.h(20): warning:  #1-D: last line of file ends without a newline
+  #endif
+delay.h(11): warning:  #1-D: last line of file ends without a newline
+  #endif
+adc.c(179): warning:  #1-D: last line of file ends without a newline
+  }
+adc.c(160): warning:  #550-D: parameter "channel_current_IO"  was set but never used
+  float voltage_to_current(float sensitive, float voltage, int offset, Status channel_current_IO){
+adc.c: 5 warnings, 0 errors
+compiling main.c...
+delay.h(11): warning:  #1-D: last line of file ends without a newline
+  #endif
+type.h(159): warning:  #1-D: last line of file ends without a newline
+  #endif
+uart.h(12): warning:  #1-D: last line of file ends without a newline
+  #endif
+timer.h(8): warning:  #1-D: last line of file ends without a newline
+  #endif
+adc.h(20): warning:  #1-D: last line of file ends without a newline
+  #endif
+exti.h(9): warning:  #1-D: last line of file ends without a newline
+  #endif
+status.h(8): warning:  #1-D: last line of file ends without a newline
+  #endif
+spi.h(21): warning:  #1-D: last line of file ends without a newline
+  #endif
+spi.h(21): warning:  #1-D: last line of file ends without a newline
+  #endif
+package_data.h(125): warning:  #1295-D: Deprecated declaration package_infor_spi - give arg types
+  void package_infor_spi();
+package_data.h(126): warning:  #1295-D: Deprecated declaration package_human_spi - give arg types
+  void package_human_spi();
+package_data.h(127): warning:  #1295-D: Deprecated declaration package_emer_spi - give arg types
+  void package_emer_spi();
+package_data.h(131): warning:  #1295-D: Deprecated declaration package_infor_spi_esp - give arg types
+  void package_infor_spi_esp();
+package_data.h(141): warning:  #1-D: last line of file ends without a newline
+  #endif
+input_pin.h(9): warning:  #1-D: last line of file ends without a newline
+  #endif
+main.c(92): warning:  #188-D: enumerated type mixed with another type
+  		NVIC_DisableIRQ(EXTI_Line8);
+main.c(92): warning:  #69-D: integer conversion resulted in truncation
+  		NVIC_DisableIRQ(EXTI_Line8);
+main.c(124): warning:  #188-D: enumerated type mixed with another type
+  		NVIC_EnableIRQ(EXTI_Line8);
+main.c(124): warning:  #69-D: integer conversion resulted in truncation
+  		NVIC_EnableIRQ(EXTI_Line8);
+main.c(246): warning:  #940-D: missing return statement at end of non-void function "check_temperature" 
+  }
+main.c(251): warning:  #1295-D: Deprecated declaration check_buffer_rx - give arg types
+  void check_buffer_rx();
+main.c(430): warning:  #111-D: statement is unreachable
+  	return 0;
+main.c(604): warning:  #1-D: last line of file ends without a newline
+  }
+main.c: 23 warnings, 0 errors
+compiling spi.c...
+spi.h(21): warning:  #1-D: last line of file ends without a newline
+  #endif
+type.h(159): warning:  #1-D: last line of file ends without a newline
+  #endif
+spi.h(21): warning:  #1-D: last line of file ends without a newline
+  #endif
+spi.c: 3 warnings, 0 errors
 compiling package_data.c...
-type.h(156): warning:  #1-D: last line of file ends without a newline
+type.h(159): warning:  #1-D: last line of file ends without a newline
   #endif
 spi.h(21): warning:  #1-D: last line of file ends without a newline
   #endif
@@ -64,12 +140,12 @@ package_data.c(218): warning:  #1035-D: single-precision operand implicitly conv
   	 current_voltage[1] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_2,MODULE1,VOLTAGE_REF)*CHANNEL_14;
 package_data.c(219): warning:  #1035-D: single-precision operand implicitly converted to double-precision
   	 current_voltage[2] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_3,MODULE1,2.997)*CHANNEL_15;
-package_data.c(333): warning:  #1-D: last line of file ends without a newline
+package_data.c(334): warning:  #1-D: last line of file ends without a newline
   		
 package_data.c: 19 warnings, 0 errors
 linking...
-Program Size: Code=14242 RO-data=450 RW-data=256 ZI-data=2448  
-".\Objects\adc.axf" - 0 Error(s), 19 Warning(s).
+Program Size: Code=14470 RO-data=450 RW-data=256 ZI-data=2448  
+".\Objects\adc.axf" - 0 Error(s), 53 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -109,7 +185,7 @@ Package Vendor: Keil
 
    * Component: Keil.ARM Compiler::Compiler:I/O:STDOUT:Breakpoint:1.2.0
       Source file:   Source\retarget_io.c
-Build Time Elapsed:  00:00:02
+Build Time Elapsed:  00:00:03
 </pre>
 </body>
 </html>

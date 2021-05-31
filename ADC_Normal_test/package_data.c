@@ -240,8 +240,9 @@ void package_infor_spi_esp(){
 	package_crc(buffer_tx_spi_esp,SIZE_BUFFER_ESP_TX,SPI_ESP_CRC);
 	package_end (buffer_tx_spi_esp,SIZE_BUFFER_ESP_TX,SPI_ESP_END);
 	GPIO_ResetBits(GPIOA,NSS_ESP);
+	//Dellay_ms_timer4(10);
 	SPI_send_data(buffer_tx_spi_esp);
-	Dellay_ms_timer4(10);
+	Dellay_ms_timer4(1);
 	GPIO_SetBits(GPIOA,NSS_ESP);
 }
 // set voltage spi esp
@@ -313,9 +314,9 @@ void package_status_pheripheral (BYTE buffer_tx_spi_esp[], Status Flag_pheripher
 //set status current
 void package_status_current(BYTE buffer_tx_spi_esp[],int startIndex){
 	BYTE temp_byte = 0x00;
-	temp_byte |= (FAIL_CURRENT_P1 == ON)? 0x01: 0x00;
-	temp_byte |= (FAIL_CURRENT_P2 == ON)? 0x01: 0x00;
-	temp_byte |= (FAIL_CURRENT_ALL == ON)? 0x01: 0x00;
+	temp_byte |= ((FAIL_CURRENT_P1 == ON)? 0x01: 0x00);
+	temp_byte |= ((FAIL_CURRENT_P2 == ON)? 0x02: 0x00);
+	temp_byte |= ((FAIL_CURRENT_ALL == ON)? 0x04: 0x00);
 	buffer_tx_spi_esp[startIndex++] = temp_byte;
 }
 //set status balance

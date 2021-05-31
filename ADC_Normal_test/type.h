@@ -44,6 +44,7 @@ union floatToByte
 //-------------------- current measure------------------------------
 #define CURRENT_MAX_DISCHARGE 3
 #define CURRENT_MAX_CHARGE 1
+#define CURRENT_MAX_ALL 50
 #define SIZE_CURRENT 3
 #define CHANNEL_CURRENT_1 13
 #define CHANNEL_CURRENT_2 14
@@ -153,4 +154,6 @@ union floatToByte
 #define EMER_TEMP_CURRENT_3 18
 //--------------------- spi_esp32 -----------------------------------
 #define SIZE_BUFFER_ESP_TX 93 
+//--------------------- button ------------------------------
+#define SENSITIVE_BUTTON 10
 #endif

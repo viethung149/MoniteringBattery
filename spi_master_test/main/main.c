@@ -21,6 +21,7 @@ float capacity_package[NUMBER_PACKAGE] = {0};
 float temperature_package[NUMBER_PACKAGE] = {0};
 float current_package[NUMBER_PACKAGE] = {0};
 bool blancing_package[NUMBER_PACKAGE] = {false};
+
 CONNECT_STATUS connect_package[NUMBER_PACKAGE] = {DISCONNECT};
 bool warning_package[NUMBER_PACKAGE] = {false};
 //
@@ -114,13 +115,12 @@ void request_receive_toSTM(void *para)
                 http_put(URL_BATTERY_CELLS, json_battery);
                 http_put(URL_BATTERY_PACKAGES, json_package);
                 http_put(URL_PHERIPHERALS, json_pheripheral);
-                http_put(URL_VOLTAGE_CELLS, json_voltage);
-                http_put(URL_TEMPERATURE_CELLS, json_temperature);
-                http_put(URL_CURRENT_PACKAGE, json_current);
-                http_put(URL_WARNING_VOLTAGE, json_voltage_warning);
-                http_put(URL_WARNING_TEMPERATURE, json_temperature_warning);
-                //vTaskDelay(3000 / portTICK_RATE_MS);
-                xSemaphoreGive(connectionSemaphore);
+                // http_put(URL_VOLTAGE_CELLS, json_voltage);
+                // http_put(URL_TEMPERATURE_CELLS, json_temperature);
+                // http_put(URL_CURRENT_PACKAGE, json_current);
+                // http_put(URL_WARNING_VOLTAGE, json_voltage_warning);
+                // http_put(URL_WARNING_TEMPERATURE, json_temperature_warning);
+               
             }
             else
             {
@@ -132,15 +132,16 @@ void request_receive_toSTM(void *para)
         else
         {
             ESP_LOGE(TAG_WIFI, "Failed to connect. Retry in");
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 2; i++)
             {
                 ESP_LOGE(TAG_WIFI, "...%d", i);
-
                 vTaskDelay(1000 / portTICK_RATE_MS);
             }
             ESP_LOGE(TAG_WIFI, "Can not connect to wifi");
             esp_restart();
         }
+         vTaskDelay(3000 / portTICK_RATE_MS);
+                 xSemaphoreGive(connectionSemaphore);
     }
 }
 void send_to_firebase()

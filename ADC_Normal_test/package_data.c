@@ -215,8 +215,8 @@ void set_flag(B_Voltage_status Flag[], int index , Style what,float value){
 void get_current(float current_voltage[],float current_a[]){
 // get data from channel 	13 -14
    current_voltage[0] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_1,MODULE1,VOLTAGE_REF)*CHANNEL_13;
-	 current_voltage[1] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_2,MODULE1,VOLTAGE_REF)*CHANNEL_14;
-	 current_voltage[2] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_3,MODULE1,2.997)*CHANNEL_15;
+	 current_voltage[1] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_2,MODULE1,VOLTAGE_REF_CR1)*CHANNEL_14;
+	 current_voltage[2] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_3,MODULE1,VOLTAGE_REF_CR2)*CHANNEL_15;
 	// convert voltage to current 13 -14
 	 current_a[0] = voltage_to_current(SENSITIVE_13,current_voltage[0],VOLTAGE_CURRENT_OFFSET,CHANNEL_13_IO);
 	 current_a[1] = voltage_to_current(SENSITIVE_14,current_voltage[1],VOLTAGE_CURRENT_OFFSET,CHANNEL_14_IO);

@@ -51,8 +51,10 @@ Status Flag_pheripheral[SIZE_PHERIPHERAL] ={OFF};
 Status Flag_blancing[SIZE_BATTERY] ={OFF,ON,OFF,ON,ON,ON,ON,ON};
 B_Voltage_status Flag_emer[SIZE_EMER] = {NORMAL};
 
-
+BYTE buffer_rx[SIZE_BUFFER_RX] = {0};
+int rx_counter =0;
 BYTE buffer_tx_uart[SIZE_BUFFER_TX]={0};
+int success_counter = 0;
 BYTE buffer_tx_spi[SIZE_BUFFER_TX]={0};
 BYTE buffer_tx_spi_esp[SIZE_BUFFER_ESP_TX]={0};
 
@@ -113,7 +115,6 @@ void update_charge(){
 			voltage_module2[i]= ADC_get_voltage_from_channel(ADC_MODULE2,NUMBER_READ,i,MODULE2,VOLTAGE_REF)*battery_ratio[i]-sum ;
 			// function set flag voltage
 			set_flag(Flag_battery,i,VOLTAGE,voltage_module2[i]);
-			
 			sum += voltage_module2[i];
 			Dellay_us(10);
 		}
@@ -200,21 +201,37 @@ void check_voltage(){
 		// check package 1, 2 for turn off relay pin PC 2, PC 3 
 	  FAIL_VOLTAGE_P1 = OFF;
 	  FAIL_VOLTAGE_P2 = OFF;
+	    int counter_voltage_p1 =0;
 			for(int i = 0 ;i< 4 ;i++){
-			  if(Flag_battery[i] != NORMAL){
+			  if(Flag_battery[i] == MAX){
+					 counter_voltage_p1++;
+				}
+				else if(Flag_battery[i] ==MIN){
 					GPIO_SetBits(GPIOC, GPIO_Pin_2);
 					Flag_pheripheral[RELAY_1] = OFF;
 					FAIL_VOLTAGE_P1 = ON;
-					break;
 				}
 			}
+			if(counter_voltage_p1 == 4){
+					GPIO_SetBits(GPIOC, GPIO_Pin_2);
+					Flag_pheripheral[RELAY_1] = OFF;
+					FAIL_VOLTAGE_P1 = ON;
+			}
+			int counter_voltage_p2 =0;
 			for(int i = 4 ;i< 8 ;i++){
-			  if(Flag_battery[i] != NORMAL){
+			  if(Flag_battery[i] == MAX){
+					counter_voltage_p2++;
+				}
+				else if(Flag_battery[i] == MIN){
 					GPIO_SetBits(GPIOC, GPIO_Pin_3);
 					Flag_pheripheral[RELAY_2] = OFF;
 					FAIL_VOLTAGE_P2 = ON;
-					break;
 				}
+			}
+			if(counter_voltage_p2==4){
+				GPIO_SetBits(GPIOC, GPIO_Pin_3);
+				Flag_pheripheral[RELAY_2] = OFF;
+				FAIL_VOLTAGE_P2 = ON;
 			}
 }
 Status check_temperature(){
@@ -248,7 +265,8 @@ void process_package1(void);
 void process_package2(void);
 void process_fan1(void);
 void process_fan2(void);
-void check_buffer_rx();
+void check_buffer_rx_peri(void);
+void check_buffer_rx_wifi(void);
 ///* USER CODE BEGIN PFP */
 ///* Private function prototypes -----------------------------------------------*/
 struct __FILE
@@ -327,7 +345,7 @@ void TIM2_IRQHandler(void) {
 			else if(counter_charge == 2 && IN_DISCHARGING == ON ){
 				update_discharge();
 			}
-			else {
+			else{
 				update_discharge();
 			}
 		}
@@ -397,6 +415,9 @@ int main()
 	SPI_init();
 	SPI_pin_nss();
 	SPI_pin_nss_esp();
+	UART_pin_config_esp();
+	UART_init_config_esp();
+	
 	while(1)
 	{
 	  if(READ_ADC_FLAG == Bit_SET)
@@ -408,12 +429,14 @@ int main()
 			check_current();
 			check_voltage();
 			check_temperature();
-			package_human();
 			if(counter_charge == 2){
+				//BYTE test[] ={'H','U','N','G','\n'};
+				//UART_PutString_esp(test);
 				set_emer_flag(voltage_module2, SIZE_BATTERY, voltage_module1, SIZE_TEMPERATURE, Flag_emer, SIZE_EMER);
 				//GPIO_ToggleBits(GPIOA, NSS);
         //package_emer();
 				package_infor();
+				package_human();
 				counter_charge = 0;
 			}
 			//TIM_Cmd(TIM2,ENABLE);
@@ -421,10 +444,12 @@ int main()
 			READ_ADC_FLAG = Bit_RESET;
 		}
 		if(Read_uart_done == ON){
-			 printf("IN UPDATE RELAY FROM SOLFWARE \n");
+			printf("IN UPDATE RELAY FROM SOLFWARE \n");
 			Read_uart_done = OFF;
-			check_buffer_rx();
-			//reset_buffer_rx(buffer_rx,SIZE_BUFFER_RX);
+			check_buffer_rx_peri();
+			check_buffer_rx_wifi();
+			reset_buffer_rx(buffer_rx,SIZE_BUFFER_RX);
+			rx_counter = 0;
 		}
 	}
 	return 0;
@@ -523,40 +548,22 @@ void USART1_IRQHandler(void)
 {
 	while(USART_GetITStatus(USART1,USART_IT_RXNE)==1)
 	{
-			rx_data = USART_ReceiveData(USART1);
-		  if(rx_data >= 0x01 && rx_data <= 0x04){
-			Read_uart_done=ON;
+			buffer_rx[rx_counter] = USART_ReceiveData(USART1);
+		  if(rx_counter > 40) rx_counter =0;
+			if(buffer_rx[rx_counter] >= 0x01 && buffer_rx[rx_counter]<=0x04)
+			{
+			  Read_uart_done=ON;
+			}
+		  else if(buffer_rx[rx_counter] == '\n'){
+			 Read_uart_done=ON;
+			}
+			else{
+				rx_counter ++;
 			}
 	}
 }
-void check_buffer_rx(){
-//	if(buffer_rx[0] != 'R' && buffer_rx[0] != 'F') return;
-//	if(buffer_rx[4] != '\r' || buffer_rx[5] != '\n') return;
-//	BYTE _crc_test = buffer_rx[0] + buffer_rx[1] + buffer_rx[2];
-//	if(_crc_test != buffer_rx[3]) return;
-//	if(buffer_rx[1] == '1'){
-//		buffer_rx[2] == 0x01? GPIO_ResetBits(GPIOC,GPIO_Pin_2): GPIO_SetBits(GPIOC,GPIO_Pin_2);
-//		Flag_pheripheral[RELAY_1] = buffer_rx[2] == 0x01?ON:OFF;
-//		printf("attemp relay 1 \n");
-//	}
-//	else if(buffer_rx[1] == '2'){
-//		buffer_rx[2] == 0x01? GPIO_ResetBits(GPIOC,GPIO_Pin_3): GPIO_SetBits(GPIOC,GPIO_Pin_3);
-//		Flag_pheripheral[RELAY_2] = buffer_rx[2] == 0x01?ON:OFF;
-//		printf("attemp relay 2 \n");
-//	}
-//	else if(buffer_rx[1] == '3'){
-//		buffer_rx[2] == 0x01? GPIO_ResetBits(GPIOC,GPIO_Pin_4): GPIO_SetBits(GPIOC,GPIO_Pin_4);
-//		Flag_pheripheral[FAN_1] = buffer_rx[2] == 0x01?ON:OFF;
-//		printf("attemp relay 3 \n");
-//	}
-//	else if(buffer_rx[1] == '4'){
-//		buffer_rx[2] == 0x01? GPIO_ResetBits(GPIOC,GPIO_Pin_5): GPIO_SetBits(GPIOC,GPIO_Pin_5);
-//		Flag_pheripheral[FAN_2] = buffer_rx[2] == 0x01?ON:OFF;
-//		printf("attemp relay 4 \n");
-//	}
-//	package_human();
-//	
-	if(rx_data == 0x01){
+void check_buffer_rx_peri(){
+	if(buffer_rx[0] == 0x01){
 		if(Flag_pheripheral[RELAY_1] == OFF && FAIL_CURRENT_P1 == OFF && FAIL_TEMPERATURE_P1 == OFF && FAIL_TEMPERATURE_P1 ==OFF){
 			GPIO_ResetBits(GPIOC,GPIO_Pin_2);
 			Flag_pheripheral[RELAY_1] =ON;
@@ -567,7 +574,7 @@ void check_buffer_rx(){
 		}
 		printf("attemp relay 1 \n");
 	}
-	else if(rx_data == 0x02 ){
+	else if(buffer_rx[0] == 0x02){
 		if(Flag_pheripheral[RELAY_2] == OFF && FAIL_CURRENT_P2 == OFF && FAIL_TEMPERATURE_P2 == OFF && FAIL_TEMPERATURE_P2 ==OFF){
 			GPIO_ResetBits(GPIOC,GPIO_Pin_3);
 			Flag_pheripheral[RELAY_2] =ON;
@@ -578,7 +585,7 @@ void check_buffer_rx(){
 		}
 		printf("attemp relay 2 \n");
 	}
-	else if(rx_data == 0x03){
+	else if(buffer_rx[0] == 0x03 ){
 	 if(Flag_pheripheral[FAN_1] == OFF ){
 			GPIO_ResetBits(GPIOC,GPIO_Pin_4);
 			Flag_pheripheral[FAN_1] =ON;
@@ -589,7 +596,7 @@ void check_buffer_rx(){
 		}
 		printf("attemp relay 3 \n");
 	}
-	else if(rx_data == 0x04){
+	else if(buffer_rx[0] == 0x04 ){
 		 if(Flag_pheripheral[FAN_2] == OFF ){
 			GPIO_ResetBits(GPIOC,GPIO_Pin_5);
 			Flag_pheripheral[FAN_2] =ON;
@@ -601,4 +608,15 @@ void check_buffer_rx(){
 		printf("attemp relay 4 \n");
 	}
 	package_human();
+}
+void check_buffer_rx_wifi(void){
+	BYTE crc = 0x00;
+	for(int i = 0;i<rx_counter-2;i++){
+		crc += buffer_rx[i];
+	}
+	if(crc == buffer_rx[rx_counter -2] && buffer_rx[rx_counter - 1] == '\r' && buffer_rx[rx_counter] == '\n'){
+		// send uart to esp
+		success_counter++;
+		UART_PutString_esp(buffer_rx);
+	}
 }

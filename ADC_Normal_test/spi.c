@@ -31,7 +31,7 @@ void SPI_init(){
 	SPI_Init(SPI1,&spi_config);
 	SPI_Cmd(SPI1,ENABLE);
 }
-// NSS pin is PA10
+// NSS pin is PA10 for stm32f103
 void SPI_pin_nss(void){
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);
 	GPIO_InitTypeDef gpio_config;
@@ -42,7 +42,7 @@ void SPI_pin_nss(void){
 	gpio_config.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA,&gpio_config);	
 }
-// NSS pin is PA11
+// NSS pin is PA15 for esp32
 void SPI_pin_nss_esp(void){
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);
 	GPIO_InitTypeDef gpio_config;
@@ -53,34 +53,7 @@ void SPI_pin_nss_esp(void){
 	gpio_config.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA,&gpio_config);
 }
-void SPI_exti_pin_handshark(void)
-{
-	/* Configure PA8 */ 
-	GPIO_InitTypeDef gpio_init;
-	RCC_AHB1PeriphClockCmd (RCC_AHB1Periph_GPIOA,ENABLE );
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-	gpio_init.GPIO_Mode=GPIO_Mode_IN;
-	gpio_init.GPIO_OType=GPIO_OType_OD;
-	gpio_init.GPIO_Pin=Handshark;
-	gpio_init.GPIO_PuPd=GPIO_PuPd_DOWN;
-	gpio_init.GPIO_Speed=GPIO_Speed_100MHz;
-	GPIO_Init(GPIOA,&gpio_init);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA,EXTI_PinSource8);
-	/* Configure EXTI Line8 */ 
-	EXTI_InitTypeDef   EXTI_InitStructure;
-  EXTI_InitStructure.EXTI_Line = EXTI_Line8;
-  EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-  EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-  EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-  EXTI_Init(&EXTI_InitStructure);
-	/* Enable and set EXTI Line6 Interrupt to the lowest priority */
-	NVIC_InitTypeDef   NVIC_InitStructure;
-  NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x01;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-}
+
 void SPI_send_data(BYTE* tx_buffer){
 	while(*tx_buffer != '\n'){
 			SPI_I2S_SendData(SPI1,*(tx_buffer));

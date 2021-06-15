@@ -38,7 +38,9 @@ union floatToByte
 	char varialbeByte[4];
 };
 //------------------- constant value ----------------------
-#define VOLTAGE_REF 2.9965
+#define VOLTAGE_REF 2.9622
+#define VOLTAGE_REF_CR1 2.9644
+#define VOLTAGE_REF_CR2 3.007
 #define NUMBER_READ 100
 #define VOLTAGE_CURRENT_OFFSET 2500
 //-------------------- current measure------------------------------
@@ -80,15 +82,15 @@ union floatToByte
 #define SIZE_TEMPERATURE 8
 
 //---------------------- define ratio battery -----------------------
-#define BATTERY1_P1  2.0
-#define BATTERY2_P1  3.0
-#define BATTERY3_P1  5.08
-#define BATTERY4_P1  6.0
+#define BATTERY1_P1  2.005
+#define BATTERY2_P1  2.99
+#define BATTERY3_P1  5.06
+#define BATTERY4_P1  5.979
 
-#define BATTERY1_P2  2.0
-#define BATTERY2_P2  3.0
-#define BATTERY3_P2  5.0
-#define BATTERY4_P2  6.0
+#define BATTERY1_P2  2.027
+#define BATTERY2_P2  2.9882
+#define BATTERY3_P2  4.9847
+#define BATTERY4_P2  6.02
 
 //--------------------- status battery ---------------------------------
 #define  STATUS_B1 0
@@ -122,7 +124,7 @@ union floatToByte
 //-------------------- define UART TX --------------------------------------
 #define SIZE_BUFFER_TX     150
 //-------------------- define UART RX --------------------------------------
-#define SIZE_BUFFER_RX     6
+#define SIZE_BUFFER_RX     100
 //---------------------- pheripheral --------------------------------
 #define SIZE_PHERIPHERAL 16
 #define RELAY_1     0

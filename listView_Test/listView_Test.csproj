@@ -266,6 +266,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChartScaleData.cs" />
     <Compile Include="Chart_Form.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -283,9 +284,11 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="GDI32.cs" />
     <Compile Include="MyDateTimeSeries.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Real_Time_Chart.cs" />
     <EmbeddedResource Include="Chart_Form.resx">
       <DependentUpon>Chart_Form.cs</DependentUpon>
     </EmbeddedResource>

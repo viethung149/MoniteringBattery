@@ -44,7 +44,7 @@ namespace listView_Test
                 command.Parameters.Add("@Balance", OleDbType.Boolean).Value = battery_infor.status_balance;
                 command.Parameters.Add("@error_voltage", OleDbType.Boolean).Value = battery_infor.warning_voltage;
                 command.Parameters.Add("@error_temperature", OleDbType.Boolean).Value = battery_infor.warning_temperature;
-                command.Parameters.Add("@Time", OleDbType.WChar).Value = DateTime.Now.ToString("yyyy:MM:dd hh:mm:ss");
+                command.Parameters.Add("@Time", OleDbType.Date).Value = DateTime.Now;
                 int result = command.ExecuteNonQuery();
                 if (result > 0)
                 {
@@ -72,7 +72,7 @@ namespace listView_Test
             command.Parameters.Add("@Balance", OleDbType.Boolean).Value = package_infor.status_balance;
             command.Parameters.Add("@Status", OleDbType.WChar).Value = package_infor.status_connect.ToString();
             command.Parameters.Add("@Warning", OleDbType.Boolean).Value = package_infor.warning;
-            command.Parameters.Add("@Time", OleDbType.WChar).Value = DateTime.Now.ToString("yyyy:MM:dd hh:mm:ss");
+            command.Parameters.Add("@Time", OleDbType.Date).Value = DateTime.Now;
             int result = command.ExecuteNonQuery();
             if (result > 0)
             {
@@ -94,7 +94,7 @@ namespace listView_Test
             command.CommandText = "insert into " + TableName + " values(@Namepheri,@Status,@Time)";
             command.Parameters.Add("@Namepheri", OleDbType.WChar).Value = namePeri;
             command.Parameters.Add("@Status", OleDbType.Boolean).Value = Peripheral_infor.status_connect;
-            command.Parameters.Add("@Time", OleDbType.WChar).Value = DateTime.Now.ToString("yyyy:MM:dd hh:mm:ss");
+            command.Parameters.Add("@Time", OleDbType.Date).Value = DateTime.Now;
             int result = command.ExecuteNonQuery();
             if (result > 0)
             {
@@ -106,6 +106,90 @@ namespace listView_Test
                 Console.WriteLine("insert pheripheral infor fail");
                 return false;
             }
+        }
+        public int Get_Infor_Battery( int ID_battery,
+                                      ref float[] buffer_voltage,
+                                      ref float[] buffer_temperature,
+                                      ref DateTime[] buffer_datetime,
+                                      DateTime inDate)
+        {
+            OleDbCommand command = new OleDbCommand();
+            command.CommandType = CommandType.Text;
+            command.Connection = Conn;
+            command.CommandText = "SELECT Voltage, Temperature, Time FROM " + "Battery" +
+                                  " WHERE Battery.IDbattery = @ID AND Battery.Time > @inDate AND  Battery.Time<@nextDate ORDER BY Time ASC";
+            command.Parameters.Add("@ID", OleDbType.Integer).Value = ID_battery;
+            command.Parameters.Add ("@inDate", OleDbType.Date).Value = inDate.Date;
+            command.Parameters.Add("@nextDate", OleDbType.Date).Value = inDate.AddDays(1);
+            DataTable table = new DataTable();
+            OleDbDataAdapter adapter = new OleDbDataAdapter(command);
+            adapter.Fill(table);
+            int index_row = 0;
+            foreach (DataRow row in table.Rows)
+            {
+                buffer_voltage[index_row] = float.Parse(row["Voltage"].ToString());
+                buffer_temperature[index_row] = float.Parse(row["Temperature"].ToString());
+                buffer_datetime[index_row] = DateTime.Parse(row["Time"].ToString());
+                Console.WriteLine("Voltage battery is {0} Temperature is {1} at Time {2}",
+                buffer_voltage[index_row].ToString(), buffer_temperature[index_row].ToString(), buffer_datetime[index_row].ToString("yyyy:MM:dd HH:mm:ss"));
+                index_row++;
+            }
+            return index_row;
+        }
+        public int Get_Infor_Package(string namePackage,
+                                       ref float[] buffer_voltage,
+                                       ref float[] buffer_temperature,
+                                       ref float[] buffer_current,
+                                       ref DateTime[] buffer_datetime,
+                                       DateTime inDate)
+        {
+            OleDbCommand command = new OleDbCommand();
+            command.CommandType = CommandType.Text;
+            command.Connection = Conn;
+            command.CommandText = "SELECT Capacity, Temperature, Ampe, Time FROM " + 
+                                  "Package WHERE  Package.Time > @inDate AND  Package.Time<@nextDate AND Package.NamePackage = @namePackage ORDER BY Time ASC";
+            command.Parameters.Add("@inDate", OleDbType.Date).Value = inDate.Date;
+            command.Parameters.Add("@nextDate", OleDbType.Date).Value = inDate.Date.AddDays(1);
+            command.Parameters.Add("@namePackage", OleDbType.VarChar).Value = namePackage;
+            DataTable table = new DataTable();
+            OleDbDataAdapter adapter = new OleDbDataAdapter(command);
+            adapter.Fill(table);
+            int index_row = 0;
+            foreach (DataRow row in table.Rows)
+            {
+                buffer_voltage[index_row] = float.Parse(row["Capacity"].ToString());
+                buffer_temperature[index_row] = float.Parse(row["Temperature"].ToString());
+                buffer_current[index_row] = float.Parse(row["Ampe"].ToString());
+                buffer_datetime[index_row] = DateTime.Parse(row["Time"].ToString());
+                Console.WriteLine("Data is V= {0}, T= {1}, C ={2}", buffer_voltage[index_row], buffer_temperature[index_row], buffer_current[index_row]);
+                index_row++;
+            }
+            return index_row;
+        }
+        public int Get_Infor_Pheri(  string namePheri,
+                                       ref int[] buffer_relay,
+                                       ref DateTime[] buffer_datetime,
+                                       DateTime inDate)
+        {
+            OleDbCommand command = new OleDbCommand();
+            command.CommandType = CommandType.Text;
+            command.Connection = Conn;
+            command.CommandText = "SELECT Status, Time FROM " +
+                                  "Peripheral WHERE  Peripheral.Time > @inDate AND  Peripheral.Time<@nextDate AND Peripheral.NamePeripheral = @namePheri ORDER BY Time ASC";
+            command.Parameters.Add("@inDate", OleDbType.Date).Value = inDate.Date;
+            command.Parameters.Add("@nextDate", OleDbType.Date).Value = inDate.Date.AddDays(1);
+            command.Parameters.Add("@namePheri", OleDbType.VarChar).Value = namePheri;
+            DataTable table = new DataTable();
+            OleDbDataAdapter adapter = new OleDbDataAdapter(command);
+            adapter.Fill(table);
+            int index_row = 0;
+            foreach (DataRow row in table.Rows)
+            {
+                buffer_relay[index_row] = bool.Parse(row["Status"].ToString())?10:0;
+                buffer_datetime[index_row] = DateTime.Parse(row["Time"].ToString());
+                index_row++;
+            }
+            return index_row;
         }
     }
 }

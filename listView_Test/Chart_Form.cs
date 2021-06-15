@@ -11,94 +11,724 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace listView_Test
 {
+
     public partial class Chart_Form : Form
     {
+        private float[] buffer_voltage = new float[10000];
+        private float[] buffer_temperature = new float[10000];
+        private float[] buffer_current = new float[10000];
+        private int[] buffer_relay = new int[10000];
+        Database db = Form1.access_db;
+        private bool chart_real_time = false;
+        delegate void SetChartForm2(double voltage, double temperature, double current);
+
+        public bool Chart_real_time
+        {
+            get { return chart_real_time; }
+        }
+        private DateTime[] buffer_datetime = new DateTime[10000];
+        bool voltageChart = false;
+       
+        bool temperatureChart = false;
+        
+        bool currentChart = false;
+        
+        string objectMonitor = null;
+        public string ObjectMonitor
+        {
+            get { return objectMonitor; }
+        }
+        void LoadComboBoxWayMonitoring() {
+            cbWay.Items.Add("Real Time");
+            cbWay.Items.Add("History");
+            cbWay.SelectedIndex = 0;
+        }
+        void LoadComboBoxWhatMonitoring() {
+            cbWhat.Items.Add("Package 1");
+            cbWhat.Items.Add("Package 2");
+            cbWhat.Items.Add("All package");
+            cbWhat.Items.Add("Cell 1 - Package 1");
+            cbWhat.Items.Add("Cell 2 - Package 1");
+            cbWhat.Items.Add("Cell 3 - Package 1");
+            cbWhat.Items.Add("Cell 4 - Package 1");
+            cbWhat.Items.Add("Cell 1 - Package 2");
+            cbWhat.Items.Add("Cell 2 - Package 2");
+            cbWhat.Items.Add("Cell 3 - Package 2");
+            cbWhat.Items.Add("Cell 4 - Package 2");
+            cbWhat.Items.Add("--None--");
+            cbWhat.SelectedIndex = 0;
+        }
+        void LoadComboBoxPheripheralInformation() {
+            cbPheri.Items.Add("Relay 1 - Package 1");
+            cbPheri.Items.Add("Relay 2 - Package 2");
+            cbPheri.Items.Add("Relay 3 - Fan1");
+            cbPheri.Items.Add("Relay 4 - Fan2");
+            cbPheri.Items.Add("All Relay");
+            cbPheri.Items.Add("--None--");
+
+            cbPheri.SelectedIndex = 0;
+        }
+       
         public Chart_Form()
         {
             InitializeComponent();
-            Config_chart();
+            LoadComboBoxWayMonitoring();
+            LoadComboBoxWhatMonitoring();
+            LoadComboBoxPheripheralInformation();
+            cBVoltage.Checked = true;
+            configChart("Time", "Voltage", "Monitoring", 0, 20);
+        
         }
-        void Config_chart() {
-            chart1.Titles.Add("Monitoring Battery");
-            var series_1 = chart1.Series.Add("Battery Voltage");
-            var series_2 = chart1.Series.Add("Battery Temperature");
-            var series_3 = chart1.Series.Add("Pheripheral");
-            // config color
-            chart1.Series["Battery Voltage"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            chart1.Series["Battery Voltage"].Color = Color.Blue;
-            chart1.Series[0].IsVisibleInLegend = false;
-            // config color
-            chart1.Series["Battery Temperature"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            chart1.Series["Battery Temperature"].Color = Color.Red;
-            chart1.Series[1].IsVisibleInLegend = false;
-            //config color
-            chart1.Series["Pheripheral"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            chart1.Series["Pheripheral"].Color = Color.Red;
-            chart1.Series[2].IsVisibleInLegend = false;
-            var chartArea = chart1.ChartAreas[series_1.ChartArea];
-            Console.WriteLine(series_1.ChartArea.ToString());
-            chartArea.AxisY.Minimum = 0;
-            chartArea.AxisY.Maximum = 5000;
-            chartArea.AxisX.Minimum = 0;
-            chartArea.AxisX.Maximum = 1000;
-            // enable autoscroll
-            chartArea.CursorX.AutoScroll = true;
-            // let's zoom to [0,blockSize] (e.g. [0,100])
-            chartArea.AxisX.ScaleView.Zoomable = true;
-            chartArea.AxisX.ScaleView.SizeType = DateTimeIntervalType.Number;
-            int position = 0;
-            int size = 100;
-            chartArea.AxisX.ScaleView.Zoom(position, size);
-            // disable zoom-reset button (only scrollbar's arrows are available)
-            chartArea.AxisX.ScrollBar.ButtonStyle = ScrollBarButtonStyles.SmallScroll;
-            // set scrollbar small change to blockSize (e.g. 100)
-            chartArea.AxisX.ScaleView.SmallScrollSize = 10;
 
-            // ZOOM Y
-            // enable autoscroll
-            chartArea.CursorY.AutoScroll = true;
-            // let's zoom to [0,blockSize] (e.g. [0,100])
-            chartArea.AxisY.ScaleView.Zoomable = true;
-            chartArea.AxisY.ScaleView.SizeType = DateTimeIntervalType.Number;
-            int position_y = 0;
-            int size_y = 2000;
-            chartArea.AxisY.ScaleView.Zoom(position_y, size_y);
-            // disable zoom-reset button (only scrollbar's arrows are available)
-            chartArea.AxisY.ScrollBar.ButtonStyle = ScrollBarButtonStyles.SmallScroll;
-            // set scrollbar small change to blockSize (e.g. 100)
-            chartArea.AxisY.ScaleView.SmallScrollSize = 10;
-            chart1.Series["Battery Voltage"].MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
-            chart1.Series["Battery Temperature"].MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Square;
-            chart1.Series["Pheripheral"].MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Diamond;
-            chart1.ChartAreas["ChartArea1"].AxisX.MajorGrid.Enabled = false;
-            chart1.ChartAreas["ChartArea1"].AxisY.MajorGrid.Enabled = false;
+        public void configChart(string titleAxisX, string titleAxisY, string title, int minY, int maxY)
+        {
+            // voltage: green  temperature: yellow current: blue
+            chart1.Tag = new ChartScaleData(chart1);
+            chart1.ChartAreas.Clear();
+            chart1.Series.Clear();
+            chart1.ChartAreas.Add("chart1");
+            chart1.Series.Add("Voltage");
+            chart1.Series.Add("Temperature");
+            chart1.Series.Add("Current");
+            chart1.Series.Add("Relay1 - Package1");
+            chart1.Series.Add("Relay2 - Package2");
+            chart1.Series.Add("Relay3 - Fan1");
+            chart1.Series.Add("Relay4 - Fan2");
+            // config type
+            chart1.Series["Voltage"].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            chart1.Series["Voltage"].YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
+            chart1.Series["Voltage"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            chart1.Series["Voltage"].BorderWidth = 3;
+
+            chart1.Series["Temperature"].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            chart1.Series["Temperature"].YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
+            chart1.Series["Temperature"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            chart1.Series["Temperature"].BorderWidth = 3;
+
+            chart1.Series["Current"].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            chart1.Series["Current"].YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
+            chart1.Series["Current"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            chart1.Series["Current"].BorderWidth = 3;
+
+            chart1.Series["Relay1 - Package1"].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            chart1.Series["Relay1 - Package1"].YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Int32;
+            chart1.Series["Relay1 - Package1"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point;
+            chart1.Series["Relay1 - Package1"].BorderWidth = 3;
+
+            chart1.Series["Relay2 - Package2"].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            chart1.Series["Relay2 - Package2"].YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Int32;
+            chart1.Series["Relay2 - Package2"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point;
+            chart1.Series["Relay2 - Package2"].BorderWidth = 3;
+
+            chart1.Series["Relay3 - Fan1"].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            chart1.Series["Relay3 - Fan1"].YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Int32;
+            chart1.Series["Relay3 - Fan1"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point;
+            chart1.Series["Relay3 - Fan1"].BorderWidth = 3;
+
+            chart1.Series["Relay4 - Fan2"].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            chart1.Series["Relay4 - Fan2"].YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Int32;
+            chart1.Series["Relay4 - Fan2"].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point;
+            chart1.Series["Relay4 - Fan2"].BorderWidth = 3;
+            // config format Axis X
+            chart1.ChartAreas[0].AxisX.LabelStyle.Format = "hh:mm:ss tt";
+            chart1.Series[0].XValueMember = "Date/Time";
+            chart1.Series[0].YValueMembers = "Data";
+            // maker point
+            chart1.Series["Voltage"].MarkerStyle = MarkerStyle.Star4;
+            chart1.Series["Voltage"].MarkerSize = Constant.MAKER_SIZE;
+            chart1.Series["Voltage"].MarkerBorderWidth = 3;
+
+            chart1.Series["Temperature"].MarkerStyle = MarkerStyle.Diamond;
+            chart1.Series["Temperature"].MarkerSize = Constant.MAKER_SIZE;
+            chart1.Series["Temperature"].MarkerBorderWidth = 3;
+
+            chart1.Series["Current"].MarkerStyle = MarkerStyle.Cross;
+            chart1.Series["Current"].MarkerSize = Constant.MAKER_SIZE;
+            chart1.Series["Current"].MarkerBorderWidth = 3;
+
+            chart1.Series["Relay1 - Package1"].MarkerStyle = MarkerStyle.Circle;
+            chart1.Series["Relay1 - Package1"].MarkerSize = Constant.MAKER_SIZE;
+            chart1.Series["Relay1 - Package1"].MarkerBorderWidth = 3;
+
+            chart1.Series["Relay2 - Package2"].MarkerStyle = MarkerStyle.Square;
+            chart1.Series["Relay2 - Package2"].MarkerSize = Constant.MAKER_SIZE;
+            chart1.Series["Relay2 - Package2"].MarkerBorderWidth = 3;
+
+            chart1.Series["Relay3 - Fan1"].MarkerStyle = MarkerStyle.Triangle;
+            chart1.Series["Relay3 - Fan1"].MarkerSize = Constant.MAKER_SIZE;
+            chart1.Series["Relay3 - Fan1"].MarkerBorderWidth = 3;
+
+            chart1.Series["Relay4 - Fan2"].MarkerStyle = MarkerStyle.Star10;
+            chart1.Series["Relay4 - Fan2"].MarkerSize = Constant.MAKER_SIZE;
+            chart1.Series["Relay4 - Fan2"].MarkerBorderWidth = 3;
+            // add title
+            Title title_chart = new Title();
+            title_chart.Font = new Font("Arial", 14, FontStyle.Bold);
+            title_chart.Text = title;
+            chart1.Titles.Clear();
+            chart1.Titles.Add(title_chart);
+            chart1.ChartAreas[0].AxisX.Title = titleAxisX;
+            chart1.ChartAreas[0].AxisY.Title = titleAxisY;
+            // set y max min
+            chart1.ChartAreas[0].AxisY.Minimum = minY;
+            chart1.ChartAreas[0].AxisY.Maximum = maxY;
+            chart1.Series[0].Color = Color.Blue;
+            // lable angle -90
+            chart1.ChartAreas[0].AxisX.LabelStyle.Angle = -90;
+            //tooltip
+            chart1.Series["Voltage"].ToolTip = "#VALY{F}\n#VALX{d/M/y H:mm:ss tt}";
+            chart1.Series["Temperature"].ToolTip = "#VALY{F}\n#VALX{d/M/y H:mm:ss tt}";
+            chart1.Series["Current"].ToolTip = "#VALY{F}\n#VALX{d/M/y H:mm:ss tt}";
+            chart1.Series["Relay1 - Package1"].ToolTip = "#VALY{F}\n#VALX{d/M/y H:mm:ss tt}";
+            chart1.Series["Relay2 - Package2"].ToolTip = "#VALY{F}\n#VALX{d/M/y H:mm:ss tt}";
+            chart1.Series["Relay3 - Fan1"].ToolTip = "#VALY{F}\n#VALX{d/M/y H:mm:ss tt}";
+            chart1.Series["Relay4 - Fan2"].ToolTip = "#VALY{F}\n#VALX{d/M/y H:mm:ss tt}";
+
+
+            // grid
+            chart1.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;
+            chart1.ChartAreas[0].AxisX.MajorGrid.LineColor = Color.LightGray;
+            // font
+            chart1.ForeColor = Color.LightGray;
+            //color
+            chart1.Series["Voltage"].Color = Color.Red;
+            chart1.Series["Temperature"].Color = Color.Yellow;
+            chart1.Series["Current"].Color = Color.Blue;
+            chart1.Series["Relay1 - Package1"].Color = Color.GreenYellow;
+            chart1.Series["Relay2 - Package2"].Color = Color.Orange;
+            chart1.Series["Relay3 - Fan1"].Color = Color.SpringGreen;
+            chart1.Series["Relay4 - Fan2"].Color = Color.BlanchedAlmond;
+            chart1.Series[0].Points.Add();
         }
         private void button1_Click(object sender, EventArgs e)
         {
-            Data_chart.add_point("Battery Voltage", 100, 100, this);
-        }
-        Point? prevPosition = null;
-        ToolTip tooltip = new ToolTip();
-        private void chart1_MouseMove(object sender, MouseEventArgs e)
-        {
-            var pos = e.Location;
-            if (prevPosition.HasValue && pos == prevPosition.Value)
-                return;
-            tooltip.RemoveAll();
-            prevPosition = pos;
-            var results = chart1.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint); // set ChartElementType.PlottingArea for full area, not only DataPoints
-            foreach (var result in results)
+            string ItemComboBoxWhat = cbWhat.SelectedItem.ToString();
+            string ItemComboBoxPheri = cbPheri.SelectedItem.ToString();
+            objectMonitor = cbWhat.SelectedItem.ToString();
+            voltageChart = cBVoltage.Checked;
+            temperatureChart = cBTemperature.Checked;
+            currentChart = cBCurrent.Checked;
+            render_chart(ItemComboBoxWhat, ItemComboBoxPheri, voltageChart, temperatureChart, currentChart);
+            if (temperatureChart)
             {
-                if (result.ChartElementType == ChartElementType.DataPoint) // set ChartElementType.PlottingArea for full area, not only DataPoints
+                chart1.ChartAreas[0].AxisY.Maximum = Constant.MAX_TEMPERATURE;
+            }
+            else if (voltageChart)
+            {
+                chart1.ChartAreas[0].AxisY.Maximum = Constant.MAX_VOLTAGE;
+            }
+            else if (currentChart)
+            {
+                chart1.ChartAreas[0].AxisY.Maximum = Constant.MAX_CURREN;
+            }
+            else
+            {
+                chart1.ChartAreas[0].AxisY.Maximum = Constant.MAX_Y_PHERI;
+            }
+            if (ItemComboBoxWhat == "--None--" && ItemComboBoxPheri == "--None--") {
+                MessageBox.Show("Please select what elements you want to monitoring", "Missing information",
+                                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            // render chart 
+            bool RenderRealTime = (cbWay.SelectedItem.ToString() == "Real Time") ? true : false;
+            if (RenderRealTime) {
+                // here is render real time
+                chart_real_time = true;
+                chart1.ChartAreas[0].AxisX.Minimum = DateTime.Now.ToOADate();
+                chart1.ChartAreas[0].AxisX.Maximum = DateTime.Now.AddMinutes(3).ToOADate();
+            }
+            else
+            {
+                chart_real_time = false;
+                // here is render in database
+                DateTime selectedDate = dateTimePicker1.Value;
+
+                // if monitoring package + pheripheral
+                if (is_monitor_package_peri(ItemComboBoxWhat, ItemComboBoxPheri))
                 {
-                    var yVal = result.ChartArea.AxisY.PixelPositionToValue(pos.Y);
-                    var xVal = result.ChartArea.AxisX.PixelPositionToValue(pos.X);
-                    string information = "X = " + ((int)xVal).ToString() + " Y = " + ((int)yVal).ToString();
-                    tooltip.Show(information, chart1, pos.X, pos.Y - 15);
+                    string namePackage = get_name_package(ItemComboBoxWhat);
+                    render_chart_only_package(namePackage, selectedDate, voltageChart, temperatureChart, currentChart);
+                    string namePheri = get_name_pheri(ItemComboBoxPheri);
+                    render_chart_only_pheri(namePheri, selectedDate);
+                    //string namePheri = get_name
+                }
+                // if monitoring cell + pheripheral
+                if (is_monitor_cell_peri(ItemComboBoxWhat, ItemComboBoxPheri)) {
+                    int idCell = get_id_cell(ItemComboBoxWhat);
+                    render_chart_only_cell(idCell, selectedDate, voltageChart, temperatureChart);
+                    string namePheri = get_name_pheri(ItemComboBoxPheri);
+                    render_chart_only_pheri(namePheri, selectedDate);
+                }
+                // if only monitor package
+                if (is_only_monitor_package(ItemComboBoxWhat, ItemComboBoxPheri)) {
+                    string namePackage = get_name_package(ItemComboBoxWhat);
+                    Console.WriteLine("get data from package" + namePackage);
+                    render_chart_only_package(namePackage, selectedDate, voltageChart, temperatureChart, currentChart);
+                }
+                // if only monitor cell
+                if (is_only_monitor_cell(ItemComboBoxWhat, ItemComboBoxPheri)) {
+                    // check cell 1 - 4 Package1, cell 1 -4 package 2
+                    // check 3 check box
+                    int idCell = get_id_cell(ItemComboBoxWhat);
+                    render_chart_only_cell(idCell, selectedDate, voltageChart, temperatureChart);
+                    return;
+                }
+                // if only monitor pheripheral
+                if (is_only_monitor_pheripheral(ItemComboBoxWhat, ItemComboBoxPheri)) {
+                    string namePheri = get_name_pheri(ItemComboBoxPheri);
+                    render_chart_only_pheri(namePheri, selectedDate);
                 }
             }
+
+        }
+        // function render chart after click button 
+        public void render_chart(string WhatMonitor, string WhatPheripheral, bool ifVoltage, bool ifTemperature, bool ifCurrent)
+        {
+            configChart("Time", "Voltage", "Monitoring", 0, 20);
+            if (cbPheri.Enabled == false) {
+                if (!ifVoltage)
+                {
+                    chart1.Series.Remove(chart1.Series["Voltage"]);
+                }
+                if (!ifTemperature)
+                {
+                    chart1.Series.Remove(chart1.Series["Temperature"]);
+
+                }
+                if (!ifCurrent)
+                {
+                    chart1.Series.Remove(chart1.Series["Current"]);
+                }
+                chart1.Series.Remove(chart1.Series["Relay1 - Package1"]);
+                chart1.Series.Remove(chart1.Series["Relay2 - Package2"]);
+                chart1.Series.Remove(chart1.Series["Relay3 - Fan1"]);
+                chart1.Series.Remove(chart1.Series["Relay4 - Fan2"]);
+            }
+            else
+            {
+                if (WhatMonitor != "--None--" && WhatPheripheral == "--None--")
+                {
+                    if (!ifVoltage)
+                    {
+                        chart1.Series.Remove(chart1.Series["Voltage"]);
+                    }
+                    if (!ifTemperature)
+                    {
+                        chart1.Series.Remove(chart1.Series["Temperature"]);
+
+                    }
+                    if (!ifCurrent)
+                    {
+                        chart1.Series.Remove(chart1.Series["Current"]);
+                    }
+                    chart1.Series.Remove(chart1.Series["Relay1 - Package1"]);
+                    chart1.Series.Remove(chart1.Series["Relay2 - Package2"]);
+                    chart1.Series.Remove(chart1.Series["Relay3 - Fan1"]);
+                    chart1.Series.Remove(chart1.Series["Relay4 - Fan2"]);
+                }
+                else if (WhatMonitor == "--None--" && WhatPheripheral != "--None--")
+                {
+                    chart1.Series.Remove(chart1.Series["Voltage"]);
+                    chart1.Series.Remove(chart1.Series["Temperature"]);
+                    chart1.Series.Remove(chart1.Series["Current"]);
+                    switch (WhatPheripheral)
+                    {
+                        case "Relay 1 - Package 1":
+                            chart1.Series.Remove(chart1.Series["Relay2 - Package2"]);
+                            chart1.Series.Remove(chart1.Series["Relay3 - Fan1"]);
+                            chart1.Series.Remove(chart1.Series["Relay4 - Fan2"]);
+                            break;
+                        case "Relay 2 - Package 2":
+                            chart1.Series.Remove(chart1.Series["Relay1 - Package1"]);
+                            chart1.Series.Remove(chart1.Series["Relay3 - Fan1"]);
+                            chart1.Series.Remove(chart1.Series["Relay4 - Fan2"]);
+                            break;
+                        case "Relay 3 - Fan1":
+                            chart1.Series.Remove(chart1.Series["Relay1 - Package1"]);
+                            chart1.Series.Remove(chart1.Series["Relay2 - Package2"]);
+                            chart1.Series.Remove(chart1.Series["Relay4 - Fan2"]);
+                            break;
+                        case "Relay 4 - Fan2":
+                            chart1.Series.Remove(chart1.Series["Relay1 - Package1"]);
+                            chart1.Series.Remove(chart1.Series["Relay2 - Package2"]);
+                            chart1.Series.Remove(chart1.Series["Relay3 - Fan1"]);
+                            break;
+                    }
+                }
+                else
+                {
+                    if (!ifVoltage)
+                    {
+                        chart1.Series.Remove(chart1.Series["Voltage"]);
+                    }
+                    if (!ifTemperature)
+                    {
+                        chart1.Series.Remove(chart1.Series["Temperature"]);
+
+                    }
+                    if (!ifCurrent)
+                    {
+                        chart1.Series.Remove(chart1.Series["Current"]);
+                    }
+                    switch (WhatPheripheral)
+                    {
+                        case "Relay 1 - Package 1":
+                            chart1.Series.Remove(chart1.Series["Relay2 - Package2"]);
+                            chart1.Series.Remove(chart1.Series["Relay3 - Fan1"]);
+                            chart1.Series.Remove(chart1.Series["Relay4 - Fan2"]);
+                            break;
+                        case "Relay 2 - Package 2":
+                            chart1.Series.Remove(chart1.Series["Relay1 - Package1"]);
+                            chart1.Series.Remove(chart1.Series["Relay3 - Fan1"]);
+                            chart1.Series.Remove(chart1.Series["Relay4 - Fan2"]);
+                            break;
+                        case "Relay 3 - Fan1":
+                            chart1.Series.Remove(chart1.Series["Relay1 - Package1"]);
+                            chart1.Series.Remove(chart1.Series["Relay2 - Package2"]);
+                            chart1.Series.Remove(chart1.Series["Relay4 - Fan2"]);
+                            break;
+                        case "Relay 4 - Fan2":
+                            chart1.Series.Remove(chart1.Series["Relay1 - Package1"]);
+                            chart1.Series.Remove(chart1.Series["Relay2 - Package2"]);
+                            chart1.Series.Remove(chart1.Series["Relay3 - Fan1"]);
+                            break;
+                    }
+                }
+            }
+            
+        }
+        // fucntion check is monitor only cells
+        // return true if check monitor cells
+        // return false if not
+        public bool is_only_monitor_cell(string WhatMonitoring, string ifPheripheral) {
+            if (WhatMonitoring != "Package 1" &&
+               WhatMonitoring != "Package 2" &&
+               WhatMonitoring != "All package" &&
+               WhatMonitoring != "--None--" &&
+               ifPheripheral == "--None--")
+            {
+                return true;
+            }
+            return false;
+        }
+        // return id cell get
+        public int get_id_cell(string cell)
+        {
+            switch (cell)
+            {
+                case "Cell 1 - Package 1":
+                    return 1;
+                case "Cell 2 - Package 1":
+                    return 2;
+                case "Cell 3 - Package 1":
+                    return 3;
+                case "Cell 4 - Package 1":
+                    return 4;
+                case "Cell 1 - Package 2":
+                    return 5;
+                case "Cell 2 - Package 2":
+                    return 6;
+                case "Cell 3 - Package 2":
+                    return 7;
+                case "Cell 4 - Package 2":
+                    return 8;
+            }
+            return -1;
         }
 
+        public bool is_only_monitor_package(string WhatMonitoring, string ifPheripheral)
+        {
+            if ((WhatMonitoring == "Package 1" ||
+                 WhatMonitoring == "Package 2" ||
+                 WhatMonitoring == "All package") &&
+                 ifPheripheral == "--None--")
+            {
+                return true;
+            }
+            return false;
+        }
+        public string get_name_package(string WhatMonitoring) {
+            switch (WhatMonitoring)
+            {
+                case "Package 1":
+                    return "Package 1";
+                case "Package 2":
+                    return "Package 2";
+                case "All package":
+                    return "All Package";
+            }
+            return null;
+        }
+        public void render_chart_only_cell(int idCell, DateTime selectedDate, bool ifVoltage, bool ifTemperature)
+        {
+            //chart1.Series
+            int rows = db.Get_Infor_Battery(idCell, ref buffer_voltage, ref buffer_temperature, ref buffer_datetime, selectedDate.Date);
+            if (rows > 0) {
+                Console.WriteLine("number of Data infor cell is:{0}", rows);
+                if (ifVoltage && ifTemperature)
+                {
+                    chart1.Series["Voltage"].Points.Clear();
+                    chart1.Series["Temperature"].Points.Clear();
+                    for (int i = 0; i < rows; i++)
+                    {
+                        chart1.Series[0].Points.AddXY(buffer_datetime[i], buffer_voltage[i]);
+                        chart1.Series[1].Points.AddXY(buffer_datetime[i], buffer_temperature[i]);
+                    }
+
+                }
+                else if (ifVoltage) {
+                    chart1.ChartAreas[0].AxisY.Maximum = 5;
+                    chart1.Series["Voltage"].Points.Clear();
+                    for (int i = 0; i < rows; i++)
+                    {
+                        chart1.Series["Voltage"].Points.AddXY(buffer_datetime[i], buffer_voltage[i]);
+                    }
+                }
+                else if (ifTemperature)
+                {
+                    chart1.Series["Temperature"].Points.Clear();
+                    for (int i = 0; i < rows; i++)
+                    {
+                        chart1.Series["Temperature"].Points.AddXY(buffer_datetime[i], buffer_voltage[i]);
+                    }
+                }
+                chart1.ChartAreas[0].AxisX.Minimum = chart1.Series[0].Points[0].XValue;
+                chart1.ChartAreas[0].AxisX.Maximum = chart1.Series[0].Points[rows - 1].XValue;
+                chart1.Update();
+            }
+            else
+            {
+                MessageBox.Show("No data");
+            }
+        }
+        public void render_chart_only_package(string namePackage, DateTime selectedDate, bool ifVoltage, bool ifTemperature, bool ifCurrent) {
+            int rows = Form1.access_db.Get_Infor_Package(namePackage, ref buffer_voltage, ref buffer_temperature, ref buffer_current, ref buffer_datetime, selectedDate);
+            Console.WriteLine("Numberber data of package infor is {0}", rows);
+            if (rows > 0)
+            {
+                if (ifVoltage)
+                {
+                    chart1.Series["Voltage"].Points.Clear();
+                    for (int i = 0; i < rows; i++)
+                    {
+                        chart1.Series["Voltage"].Points.AddXY(buffer_datetime[i], buffer_voltage[i]);
+                    }
+
+                }
+                if (ifTemperature)
+                {
+                    chart1.Series["Temperature"].Points.Clear();
+                    for (int i = 0; i < rows; i++)
+                    {
+                        chart1.Series["Temperature"].Points.AddXY(buffer_datetime[i], buffer_temperature[i]);
+                    }
+                }
+                if (ifCurrent)
+                {
+                    chart1.Series["Current"].Points.Clear();
+                    for (int i = 0; i < rows; i++)
+                    {
+                        chart1.Series["Current"].Points.AddXY(buffer_datetime[i], buffer_current[i]);
+                    }
+                }
+                chart1.ChartAreas[0].AxisX.Minimum = chart1.Series[0].Points[0].XValue;
+                chart1.ChartAreas[0].AxisX.Maximum = chart1.Series[0].Points[rows - 1].XValue;
+                chart1.Update();
+            }
+            else
+            {
+                MessageBox.Show("No data");
+            }
+
+        }
+        public bool is_monitor_cell_peri(string WhatMonitoring, string ifPheripheral) {
+            if (ifPheripheral != "--None--" &&
+                (WhatMonitoring != "Package 1" && WhatMonitoring != "Package 2" && WhatMonitoring != "All package") &&
+                WhatMonitoring != "--None--") {
+                return true;
+            }
+            return false;
+        }
+        public bool is_monitor_package_peri(string WhatMonitoring, string ifPheripheral)
+        {
+            if (ifPheripheral != "--None--" &&
+                (WhatMonitoring == "Package 1" || WhatMonitoring == "Package 2" || WhatMonitoring == "All package") &&
+                WhatMonitoring !="--None--")
+            {
+                return true;
+            }
+            return false;
+        }
+        public bool is_only_monitor_pheripheral(string WhatMonitoring, string ifPheripheral) {
+            if (WhatMonitoring == "--None--" && ifPheripheral != "--None--")
+            {
+                return true;
+            }
+            return false;
+        }
+        public string get_name_pheri(string ifPheripheral)
+        {
+            switch (ifPheripheral)
+            {
+                case "Relay 1 - Package 1":
+                    return "Relay 1 - Package 1";
+                case "Relay 2 - Package 2":
+                    return "Relay 2 - Package 2";
+                case "Relay 3 - Fan1":
+                    return "Relay 3 - Fan 1";
+                case "Relay 4 - Fan2":
+                    return "Relay 4 - Fan 2";
+                case "All Relay":
+                    return "all";
+            }
+            return null;
+        }
+        public void render_chart_only_pheri(string namePheri, DateTime selectedDate) {
+            if (namePheri != "all")
+            {
+                int rows = Form1.access_db.Get_Infor_Pheri(namePheri, ref buffer_relay, ref buffer_datetime, selectedDate);
+                Console.WriteLine("Number data of package pheripheral is {0}", rows);
+                if (rows > 0)
+                {
+                    switch (namePheri)
+                    {
+                        case "Relay 1 - Package 1":
+                            for (int i = 0; i < rows; i++)
+                            {
+                                chart1.Series["Relay1 - Package1"].Points.AddXY(buffer_datetime[i], buffer_relay[i]);
+                            }
+                            break;
+                        case "Relay 2 - Package 2":
+                            for (int i = 0; i < rows; i++)
+                            {
+                                chart1.Series["Relay2 - Package2"].Points.AddXY(buffer_datetime[i], buffer_relay[i]);
+                            }
+                            break;
+                        case "Relay 3 - Fan 1":
+                            for (int i = 0; i < rows; i++)
+                            {
+                                chart1.Series["Relay3 - Fan1"].Points.AddXY(buffer_datetime[i], buffer_relay[i]);
+                            }
+                            break;
+                        case "Relay 4 - Fan 2":
+                            for (int i = 0; i < rows; i++)
+                            {
+                                chart1.Series["Relay4 - Fan2"].Points.AddXY(buffer_datetime[i], buffer_relay[i]);
+                            }
+                            break;
+
+
+
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No data");
+                }
+            }
+            else
+            {
+                int rows_1 = Form1.access_db.Get_Infor_Pheri("Relay 1 - Package 1", ref buffer_relay, ref buffer_datetime, selectedDate);
+                if (rows_1 > 0)
+                {
+                    for (int i = 0; i < rows_1; i++)
+                    {
+                        chart1.Series["Relay1 - Package1"].Points.AddXY(buffer_datetime[i], buffer_relay[i]);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No data");
+
+                    return;
+                }
+                int rows_2 = Form1.access_db.Get_Infor_Pheri("Relay 2 - Package 2", ref buffer_relay, ref buffer_datetime, selectedDate);
+                if (rows_2 > 0)
+                {
+                  for (int i = 0; i < rows_2; i++)
+                    {
+                        chart1.Series["Relay2 - Package2"].Points.AddXY(buffer_datetime[i], buffer_relay[i]);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No data");
+
+                    return;
+                }
+                int rows_3 = Form1.access_db.Get_Infor_Pheri("Relay 3 - Fan 1", ref buffer_relay, ref buffer_datetime, selectedDate);
+                if (rows_3 > 0)
+                {
+                    for (int i = 0; i < rows_3; i++)
+                    {
+                        chart1.Series["Relay3 - Fan1"].Points.AddXY(buffer_datetime[i], buffer_relay[i]);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No data");
+
+                    return;
+                }
+                int rows_4 = Form1.access_db.Get_Infor_Pheri("Relay 4 - Fan 2", ref buffer_relay, ref buffer_datetime, selectedDate);
+                if (rows_4 > 0)
+                {
+                    for (int i = 0; i < rows_4; i++)
+                    {
+                        chart1.Series["Relay4 - Fan2"].Points.AddXY(buffer_datetime[i], buffer_relay[i]);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No data");
+
+                    return;
+                }
+
+            }
+
+
+        }
+        public void render_chart_real_time(double voltage, double temperature, double current) {
+           
+            try
+            {
+                
+                if (chart1.InvokeRequired)
+                {
+                    SetChartForm2 d = new SetChartForm2(render_chart_real_time);
+                    this.Invoke(d, voltage, temperature, current);
+                }
+                else
+                {
+                    if (DateTime.Now.ToOADate() >= chart1.ChartAreas[0].AxisX.Maximum)
+                    {
+                        chart1.ChartAreas[0].AxisX.Maximum = DateTime.Now.AddMinutes(3).ToOADate();
+                    }
+                    if (voltageChart)
+                    {
+                        chart1.Series["Voltage"].Points.AddXY(DateTime.Now,voltage );
+                    }
+                    if (temperatureChart)
+                    {
+                        chart1.Series["Temperature"].Points.AddXY(DateTime.Now,temperature);
+                    }
+                    if (currentChart)
+                    {
+                        chart1.Series["Current"].Points.AddXY(DateTime.Now,current);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }  
+        }
+       
         private void btnScale_Click(object sender, EventArgs e)
         {
             // feature auto scale
@@ -110,6 +740,85 @@ namespace listView_Test
             this.Hide(); // hide the form instead of closing
             e.Cancel = true; // this cancels the close event.
             Console.WriteLine(Form1.FLAG_REALTIME_CHART);
+        }
+
+        private void cbWay_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cbWay.SelectedItem.ToString() == "Real Time")
+            {
+                
+                cbPheri.Enabled = false;
+            }
+            else
+            {
+                chart_real_time = false;
+                cbPheri.Enabled = true;
+            }
+        }
+
+        private void cbWhat_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selected = cbWhat.SelectedItem.ToString();
+            if (selected != "Package 1" && selected != "Package 2" && selected != "All package" && selected !="--None--") {
+                cBCurrent.Checked = false;
+                cBCurrent.Enabled = false;
+            }
+            else if(selected == "--None--")
+            {
+                cBVoltage.Checked = false;
+                cBVoltage.Enabled = false;
+                cBTemperature.Checked = false;
+                cBTemperature.Enabled = false;
+                cBCurrent.Checked = false;
+                cBCurrent.Enabled = false;
+            }
+            else
+            {
+                cBTemperature.Enabled = true;
+                cBVoltage.Enabled = true;
+                cBCurrent.Enabled = true;
+            }
+        }
+        // tool tip for chart 1
+        Point? prevPosition = null;
+        ToolTip tooltip = new ToolTip();
+        private void chart1_MouseClick(object sender, MouseEventArgs e)
+        {
+            var pos = e.Location;
+            if (prevPosition.HasValue && pos == prevPosition.Value)
+                return;
+            tooltip.RemoveAll();
+            prevPosition = pos;
+            var results = chart1.HitTest(pos.X, pos.Y, false,
+                                       ChartElementType.DataPoint);
+
+            foreach (var result in results)
+            {
+                if (result.ChartElementType == ChartElementType.DataPoint)
+                {
+                    var prop = result.Object as DataPoint;
+                    if (prop != null)
+                    {
+                        var pointXPixel = result.ChartArea.AxisX.ValueToPixelPosition(prop.XValue);
+                        var pointYPixel = result.ChartArea.AxisY.ValueToPixelPosition(prop.YValues[0]);
+
+                        // check if the cursor is really close to the point (2 pixels around the point)
+                        if (Math.Abs(pos.X - pointXPixel) < 2 &&
+                            Math.Abs(pos.Y - pointYPixel) < 2)
+                        {
+                            tooltip.Show("X=" + prop.XValue + ", Y=" + prop.YValues[0], this.chart1,
+                                            pos.X, pos.Y - 15);
+
+                        }
+                    }
+                }
+            }
+        }
+
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            PrintDialog a = new PrintDialog();
+            chart1.Printing.Print(true);
         }
     }
 }

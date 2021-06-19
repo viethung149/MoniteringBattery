@@ -24,9 +24,9 @@ namespace listView_Test
                 string[] arr = new string[Constant.TAB_BATTERY_COLUMN];
                 arr[0] = battery_data.voltage.ToString();
                 arr[1] = battery_data.temperature.ToString();
-                arr[2] = battery_data.status_balance == true ? "Blancing" : "Not Blancing";
-                arr[3] = battery_data.warning_voltage == true ? "Emergency" : "Normal";
-                arr[4] = battery_data.warning_temperature == true ? "Emergency" : "Normal";
+                //arr[2] = battery_data.status_balance == true ? "Blancing" : "Not Blancing";
+                arr[2] = battery_data.warning_voltage == true ? "Emergency" : "Normal";
+                arr[3] = battery_data.warning_temperature == true ? "Emergency" : "Normal";
                 while (f.CustomListView_Battery.Items[row - 1].SubItems.Count != 1)
                 {
                     f.CustomListView_Battery.Items[row - 1].SubItems.RemoveAt(1);
@@ -47,12 +47,12 @@ namespace listView_Test
                 arr[0] = package.capacity.ToString();
                 arr[1] = package.temperater.ToString();
                 arr[2] = package.current.ToString();
-                arr[3] = package.status_balance == true ? "Blancing" : "Not Blancing";
-                if (package.status_connect == 0) { arr[4] = "Disconnect"; }
-                else if (package.status_connect == 1) { arr[4] = "Connect"; }
-                else if (package.status_connect == 2) { arr[4] = "Charge"; }
-                else if (package.status_connect == 3) { arr[4] = "Discharge"; }
-                arr[5] = package.warning == true ? "Emergency" : "Normal";
+                //arr[3] = package.status_balance == true ? "Blancing" : "Not Blancing";
+                if (package.status_connect == 0) { arr[3] = "Disconnect"; }
+                else if (package.status_connect == 1) { arr[3] = "Connect"; }
+                else if (package.status_connect == 2) { arr[3] = "Charge"; }
+                else if (package.status_connect == 3) { arr[3] = "Discharge"; }
+                arr[4] = package.warning == true ? "Emergency" : "Normal";
                 while (f.CustomListView_Package.Items[row - 1].SubItems.Count != 1)
                 {
                     f.CustomListView_Package.Items[row - 1].SubItems.RemoveAt(1);

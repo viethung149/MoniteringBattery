@@ -111,7 +111,8 @@ namespace listView_Test
                                       ref float[] buffer_voltage,
                                       ref float[] buffer_temperature,
                                       ref DateTime[] buffer_datetime,
-                                      DateTime inDate)
+                                      DateTime from,
+                                      DateTime to)
         {
             OleDbCommand command = new OleDbCommand();
             command.CommandType = CommandType.Text;
@@ -119,8 +120,8 @@ namespace listView_Test
             command.CommandText = "SELECT Voltage, Temperature, Time FROM " + "Battery" +
                                   " WHERE Battery.IDbattery = @ID AND Battery.Time > @inDate AND  Battery.Time<@nextDate ORDER BY Time ASC";
             command.Parameters.Add("@ID", OleDbType.Integer).Value = ID_battery;
-            command.Parameters.Add ("@inDate", OleDbType.Date).Value = inDate.Date;
-            command.Parameters.Add("@nextDate", OleDbType.Date).Value = inDate.AddDays(1);
+            command.Parameters.Add ("@inDate", OleDbType.Date).Value = from;
+            command.Parameters.Add("@nextDate", OleDbType.Date).Value = to;
             DataTable table = new DataTable();
             OleDbDataAdapter adapter = new OleDbDataAdapter(command);
             adapter.Fill(table);
@@ -141,15 +142,16 @@ namespace listView_Test
                                        ref float[] buffer_temperature,
                                        ref float[] buffer_current,
                                        ref DateTime[] buffer_datetime,
-                                       DateTime inDate)
+                                       DateTime from,
+                                       DateTime to)
         {
             OleDbCommand command = new OleDbCommand();
             command.CommandType = CommandType.Text;
             command.Connection = Conn;
             command.CommandText = "SELECT Capacity, Temperature, Ampe, Time FROM " + 
                                   "Package WHERE  Package.Time > @inDate AND  Package.Time<@nextDate AND Package.NamePackage = @namePackage ORDER BY Time ASC";
-            command.Parameters.Add("@inDate", OleDbType.Date).Value = inDate.Date;
-            command.Parameters.Add("@nextDate", OleDbType.Date).Value = inDate.Date.AddDays(1);
+            command.Parameters.Add("@inDate", OleDbType.Date).Value = from ;
+            command.Parameters.Add("@nextDate", OleDbType.Date).Value =to;
             command.Parameters.Add("@namePackage", OleDbType.VarChar).Value = namePackage;
             DataTable table = new DataTable();
             OleDbDataAdapter adapter = new OleDbDataAdapter(command);
@@ -169,15 +171,16 @@ namespace listView_Test
         public int Get_Infor_Pheri(  string namePheri,
                                        ref int[] buffer_relay,
                                        ref DateTime[] buffer_datetime,
-                                       DateTime inDate)
+                                       DateTime from,
+                                       DateTime to)
         {
             OleDbCommand command = new OleDbCommand();
             command.CommandType = CommandType.Text;
             command.Connection = Conn;
             command.CommandText = "SELECT Status, Time FROM " +
                                   "Peripheral WHERE  Peripheral.Time > @inDate AND  Peripheral.Time<@nextDate AND Peripheral.NamePeripheral = @namePheri ORDER BY Time ASC";
-            command.Parameters.Add("@inDate", OleDbType.Date).Value = inDate.Date;
-            command.Parameters.Add("@nextDate", OleDbType.Date).Value = inDate.Date.AddDays(1);
+            command.Parameters.Add("@inDate", OleDbType.Date).Value = from;
+            command.Parameters.Add("@nextDate", OleDbType.Date).Value = to;
             command.Parameters.Add("@namePheri", OleDbType.VarChar).Value = namePheri;
             DataTable table = new DataTable();
             OleDbDataAdapter adapter = new OleDbDataAdapter(command);

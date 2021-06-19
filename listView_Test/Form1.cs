@@ -133,7 +133,7 @@ namespace listView_Test
             CustomListView_Battery.Columns.Add("Name Battery ");
             CustomListView_Battery.Columns.Add("Voltage");
             CustomListView_Battery.Columns.Add("Temperater");
-            CustomListView_Battery.Columns.Add("Blance status");
+            //CustomListView_Battery.Columns.Add("Blance status");
             CustomListView_Battery.Columns.Add("Warning Voltage");
             CustomListView_Battery.Columns.Add("Warning Temperature");
 
@@ -160,7 +160,7 @@ namespace listView_Test
             CustomListView_Package.Columns.Add("Capacity");
             CustomListView_Package.Columns.Add("Temperater");
             CustomListView_Package.Columns.Add("Current");
-            CustomListView_Package.Columns.Add("Balance");
+            //CustomListView_Package.Columns.Add("Balance");
             CustomListView_Package.Columns.Add("Connect");
             CustomListView_Package.Columns.Add("Warning");
             CustomListView_Package.Items.Add("Package 1");
@@ -374,6 +374,8 @@ namespace listView_Test
         private byte[] data = new byte[135];
         private int number_byte_read = 0;
         private bool update = false;
+        int success_data = 0;
+        int fail_data = 0;
         private void uart_read_even(object sender, SerialDataReceivedEventArgs e)
         {
             byte crc = 0x00;
@@ -389,7 +391,7 @@ namespace listView_Test
                 if (number_byte_read >= 200) number_byte_read = 0;
                 buffer_rx[number_byte_read] = (byte)item;
                 // Console.WriteLine("number: {0} byte {1:X2}", number_byte_read, buffer_rx[number_byte_read]);
-                Console.Write("{0:X2} ", (byte)item);
+                //Console.Write("{0:X2} ", (byte)item);
                 if (buffer_rx[134] == '\r')
                 {
                     Array.Copy(buffer_rx, 0, data, 0, 135);
@@ -397,15 +399,15 @@ namespace listView_Test
                     Array.Clear(buffer_rx, 0, buffer_rx.Length);
                     update = true;
                 }
-                else if (buffer_rx[number_byte_read] == '\r' && number_byte_read != 134) {
-                    Console.WriteLine("byte wrong {0:X2} number {1}", buffer_rx[number_byte_read], number_byte_read);
-                    number_byte_read = -1;
-                    Console.WriteLine("Wrong end data");
-                }
+                //else if (buffer_rx[number_byte_read] == '\r' && number_byte_read != 134) {
+                //    Console.WriteLine("byte wrong {0:X2} number {1}", buffer_rx[number_byte_read], number_byte_read);
+                //    number_byte_read = -1;
+                //    Console.WriteLine("Wrong end data");
+                //}
                 number_byte_read++;
                 content += " " + ((byte)item).ToString("X2");
             }
-            Console.WriteLine("---------------------------------------------");
+            //Console.WriteLine("---------------------------------------------");
             //Console.WriteLine("in event " + counter.ToString() + content +"with number byte is " +bytes.ToString());
             counter++;
 
@@ -425,6 +427,9 @@ namespace listView_Test
                                                         Constant.NUMBER_BATTERY))
                     {
                         Console.WriteLine("Successfull receive EmerPackage");
+
+                        success_data++;
+                        Console.WriteLine("Number success {0} Number fail {1}", success_data, fail_data);
                     }
                     if (Data.check_correct_inforPackage(data,
                                                         number_bytes,
@@ -435,7 +440,9 @@ namespace listView_Test
                                                         ref status_adding,
                                                         Constant.NUMBER_BATTERY))
                     {
+                        success_data++;
                         Console.WriteLine("Successfull receive inforPackage");
+                        Console.WriteLine("Number success {0} Number fail {1}", success_data, fail_data);
                         //if (FLAG_REALTIME_CHART == 1)
                         //{
                         //    // adding data to chart form
@@ -455,17 +462,20 @@ namespace listView_Test
                                                        ref status_adding_pheripheral,
                                                        Constant.NUMBER_PHERI))
                     {
+                        success_data++;
                         Console.WriteLine("Successfull receive humanPackage");
+                        Console.WriteLine("Number success {0} Number fail {1}", success_data, fail_data);
                         SetListView_Pheripheral(status_peripheral, status_adding_pheripheral, Constant.NUMBER_PHERI);
                     }
                 }
                 else
                 {
-
+                    fail_data++;
+                    Console.WriteLine("Number success {0} Number fail {1}", success_data, fail_data);
                     Port.DiscardInBuffer();
-                    return;
                 }
             }
+           
 
         }
         public void SetIconChart1() {

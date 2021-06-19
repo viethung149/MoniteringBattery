@@ -69,7 +69,6 @@ namespace listView_Test
             this.btnFan1 = new System.Windows.Forms.Button();
             this.btnRelay2 = new System.Windows.Forms.Button();
             this.btnRelay1 = new System.Windows.Forms.Button();
-            this.btnStart = new System.Windows.Forms.Button();
             this.Port = new System.IO.Ports.SerialPort(this.components);
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -391,17 +390,16 @@ namespace listView_Test
             this.groupBox2.Controls.Add(this.btnFan1);
             this.groupBox2.Controls.Add(this.btnRelay2);
             this.groupBox2.Controls.Add(this.btnRelay1);
-            this.groupBox2.Controls.Add(this.btnStart);
-            this.groupBox2.Location = new System.Drawing.Point(749, 29);
+            this.groupBox2.Location = new System.Drawing.Point(749, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(130, 205);
+            this.groupBox2.Size = new System.Drawing.Size(130, 222);
             this.groupBox2.TabIndex = 3;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "CONTROL";
             // 
             // btnFan2
             // 
-            this.btnFan2.Location = new System.Drawing.Point(6, 135);
+            this.btnFan2.Location = new System.Drawing.Point(6, 101);
             this.btnFan2.Name = "btnFan2";
             this.btnFan2.Size = new System.Drawing.Size(75, 23);
             this.btnFan2.TabIndex = 6;
@@ -411,7 +409,7 @@ namespace listView_Test
             // 
             // btnFan1
             // 
-            this.btnFan1.Location = new System.Drawing.Point(6, 106);
+            this.btnFan1.Location = new System.Drawing.Point(6, 72);
             this.btnFan1.Name = "btnFan1";
             this.btnFan1.Size = new System.Drawing.Size(75, 23);
             this.btnFan1.TabIndex = 5;
@@ -421,7 +419,7 @@ namespace listView_Test
             // 
             // btnRelay2
             // 
-            this.btnRelay2.Location = new System.Drawing.Point(6, 77);
+            this.btnRelay2.Location = new System.Drawing.Point(6, 43);
             this.btnRelay2.Name = "btnRelay2";
             this.btnRelay2.Size = new System.Drawing.Size(75, 23);
             this.btnRelay2.TabIndex = 3;
@@ -431,22 +429,13 @@ namespace listView_Test
             // 
             // btnRelay1
             // 
-            this.btnRelay1.Location = new System.Drawing.Point(6, 48);
+            this.btnRelay1.Location = new System.Drawing.Point(6, 15);
             this.btnRelay1.Name = "btnRelay1";
             this.btnRelay1.Size = new System.Drawing.Size(75, 23);
             this.btnRelay1.TabIndex = 2;
             this.btnRelay1.Text = "Relay 1";
             this.btnRelay1.UseVisualStyleBackColor = true;
             this.btnRelay1.Click += new System.EventHandler(this.btnRelay1_Click);
-            // 
-            // btnStart
-            // 
-            this.btnStart.Location = new System.Drawing.Point(6, 19);
-            this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(75, 23);
-            this.btnStart.TabIndex = 0;
-            this.btnStart.Text = "Start";
-            this.btnStart.UseVisualStyleBackColor = true;
             // 
             // Port
             // 
@@ -467,9 +456,9 @@ namespace listView_Test
             // 
             this.groupBox3.Controls.Add(this.button1);
             this.groupBox3.Controls.Add(this.btnChart);
-            this.groupBox3.Location = new System.Drawing.Point(645, 33);
+            this.groupBox3.Location = new System.Drawing.Point(645, 12);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(98, 201);
+            this.groupBox3.Size = new System.Drawing.Size(98, 222);
             this.groupBox3.TabIndex = 5;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "groupBox3";
@@ -724,9 +713,9 @@ namespace listView_Test
             this.groupBox4.Controls.Add(this.cbSelectObjChart2);
             this.groupBox4.Controls.Add(this.label10);
             this.groupBox4.Controls.Add(this.cbSelectObjChart1);
-            this.groupBox4.Location = new System.Drawing.Point(388, 28);
+            this.groupBox4.Location = new System.Drawing.Point(388, 12);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(251, 205);
+            this.groupBox4.Size = new System.Drawing.Size(251, 221);
             this.groupBox4.TabIndex = 8;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Real Time Chart";
@@ -813,7 +802,7 @@ namespace listView_Test
             // 
             // btnExecuteMonitoringChart2
             // 
-            this.btnExecuteMonitoringChart2.Location = new System.Drawing.Point(141, 170);
+            this.btnExecuteMonitoringChart2.Location = new System.Drawing.Point(141, 185);
             this.btnExecuteMonitoringChart2.Name = "btnExecuteMonitoringChart2";
             this.btnExecuteMonitoringChart2.Size = new System.Drawing.Size(104, 23);
             this.btnExecuteMonitoringChart2.TabIndex = 7;
@@ -823,7 +812,7 @@ namespace listView_Test
             // 
             // btnExecuteMonitoringChart1
             // 
-            this.btnExecuteMonitoringChart1.Location = new System.Drawing.Point(16, 170);
+            this.btnExecuteMonitoringChart1.Location = new System.Drawing.Point(16, 185);
             this.btnExecuteMonitoringChart1.Name = "btnExecuteMonitoringChart1";
             this.btnExecuteMonitoringChart1.Size = new System.Drawing.Size(104, 23);
             this.btnExecuteMonitoringChart1.TabIndex = 6;
@@ -971,7 +960,6 @@ namespace listView_Test
         public System.Windows.Forms.Label label9;
         public System.Windows.Forms.ComboBox cbStop;
         public System.Windows.Forms.RichTextBox richTextBox1;
-        public System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Button btnChart;
         private System.Windows.Forms.Splitter splitter1;

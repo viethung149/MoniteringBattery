@@ -242,42 +242,56 @@ namespace listView_Test
             {
                 chart_real_time = false;
                 // here is render in database
-                DateTime selectedDate = dateTimePicker1.Value;
+                DateTime selectedDate = dateTimePickerDate.Value;
+                DateTime selectedTimeFrom = dateTimePickerFrom.Value;
+                DateTime selectedTimeTo = dateTimePickerTo.Value;
+                DateTime from = new DateTime(selectedDate.Year,
+                                             selectedDate.Month,
+                                             selectedDate.Day,
+                                             selectedTimeFrom.Hour,
+                                             selectedTimeFrom.Minute,
+                                             selectedTimeFrom.Second);
+                DateTime to = new DateTime(selectedDate.Year,
+                                           selectedDate.Month,
+                                           selectedDate.Day,
+                                           selectedTimeTo.Hour,
+                                           selectedTimeTo.Minute,
+                                           selectedTimeTo.Second);
 
                 // if monitoring package + pheripheral
                 if (is_monitor_package_peri(ItemComboBoxWhat, ItemComboBoxPheri))
                 {
                     string namePackage = get_name_package(ItemComboBoxWhat);
-                    render_chart_only_package(namePackage, selectedDate, voltageChart, temperatureChart, currentChart);
+                    render_chart_only_package(namePackage, from, to, voltageChart, temperatureChart, currentChart);
                     string namePheri = get_name_pheri(ItemComboBoxPheri);
-                    render_chart_only_pheri(namePheri, selectedDate);
+                    render_chart_only_pheri(namePheri, from, to);
                     //string namePheri = get_name
                 }
                 // if monitoring cell + pheripheral
                 if (is_monitor_cell_peri(ItemComboBoxWhat, ItemComboBoxPheri)) {
                     int idCell = get_id_cell(ItemComboBoxWhat);
-                    render_chart_only_cell(idCell, selectedDate, voltageChart, temperatureChart);
+                    render_chart_only_cell(idCell, from, to, voltageChart, temperatureChart);
                     string namePheri = get_name_pheri(ItemComboBoxPheri);
-                    render_chart_only_pheri(namePheri, selectedDate);
+                    render_chart_only_pheri(namePheri,from, to);
                 }
                 // if only monitor package
                 if (is_only_monitor_package(ItemComboBoxWhat, ItemComboBoxPheri)) {
                     string namePackage = get_name_package(ItemComboBoxWhat);
                     Console.WriteLine("get data from package" + namePackage);
-                    render_chart_only_package(namePackage, selectedDate, voltageChart, temperatureChart, currentChart);
+                    render_chart_only_package(namePackage, from, to, voltageChart, temperatureChart, currentChart);
                 }
                 // if only monitor cell
                 if (is_only_monitor_cell(ItemComboBoxWhat, ItemComboBoxPheri)) {
                     // check cell 1 - 4 Package1, cell 1 -4 package 2
                     // check 3 check box
                     int idCell = get_id_cell(ItemComboBoxWhat);
-                    render_chart_only_cell(idCell, selectedDate, voltageChart, temperatureChart);
+                    render_chart_only_cell(idCell, from,to, voltageChart, temperatureChart);
                     return;
                 }
                 // if only monitor pheripheral
                 if (is_only_monitor_pheripheral(ItemComboBoxWhat, ItemComboBoxPheri)) {
                     string namePheri = get_name_pheri(ItemComboBoxPheri);
-                    render_chart_only_pheri(namePheri, selectedDate);
+                    render_chart_only_pheri(namePheri,from, to);
                 }
             }
 
@@ -460,10 +474,10 @@ namespace listView_Test
             }
             return null;
         }
-        public void render_chart_only_cell(int idCell, DateTime selectedDate, bool ifVoltage, bool ifTemperature)
+        public void render_chart_only_cell(int idCell, DateTime from, DateTime to, bool ifVoltage, bool ifTemperature)
         {
             //chart1.Series
-            int rows = db.Get_Infor_Battery(idCell, ref buffer_voltage, ref buffer_temperature, ref buffer_datetime, selectedDate.Date);
+            int rows = db.Get_Infor_Battery(idCell, ref buffer_voltage, ref buffer_temperature, ref buffer_datetime,from, to);
             if (rows > 0) {
                 Console.WriteLine("number of Data infor cell is:{0}", rows);
                 if (ifVoltage && ifTemperature)
@@ -502,8 +516,8 @@ namespace listView_Test
                 MessageBox.Show("No data");
             }
         }
-        public void render_chart_only_package(string namePackage, DateTime selectedDate, bool ifVoltage, bool ifTemperature, bool ifCurrent) {
-            int rows = Form1.access_db.Get_Infor_Package(namePackage, ref buffer_voltage, ref buffer_temperature, ref buffer_current, ref buffer_datetime, selectedDate);
+        public void render_chart_only_package(string namePackage, DateTime from, DateTime to, bool ifVoltage, bool ifTemperature, bool ifCurrent) {
+            int rows = Form1.access_db.Get_Infor_Package(namePackage, ref buffer_voltage, ref buffer_temperature, ref buffer_current, ref buffer_datetime, from,to);
             Console.WriteLine("Numberber data of package infor is {0}", rows);
             if (rows > 0)
             {
@@ -584,10 +598,10 @@ namespace listView_Test
             }
             return null;
         }
-        public void render_chart_only_pheri(string namePheri, DateTime selectedDate) {
+        public void render_chart_only_pheri(string namePheri, DateTime from, DateTime to) {
             if (namePheri != "all")
             {
-                int rows = Form1.access_db.Get_Infor_Pheri(namePheri, ref buffer_relay, ref buffer_datetime, selectedDate);
+                int rows = Form1.access_db.Get_Infor_Pheri(namePheri, ref buffer_relay, ref buffer_datetime, from, to);
                 Console.WriteLine("Number data of package pheripheral is {0}", rows);
                 if (rows > 0)
                 {
@@ -631,7 +645,7 @@ namespace listView_Test
             }
             else
             {
-                int rows_1 = Form1.access_db.Get_Infor_Pheri("Relay 1 - Package 1", ref buffer_relay, ref buffer_datetime, selectedDate);
+                int rows_1 = Form1.access_db.Get_Infor_Pheri("Relay 1 - Package 1", ref buffer_relay, ref buffer_datetime, from,to);
                 if (rows_1 > 0)
                 {
                     for (int i = 0; i < rows_1; i++)
@@ -645,7 +659,7 @@ namespace listView_Test
 
                     return;
                 }
-                int rows_2 = Form1.access_db.Get_Infor_Pheri("Relay 2 - Package 2", ref buffer_relay, ref buffer_datetime, selectedDate);
+                int rows_2 = Form1.access_db.Get_Infor_Pheri("Relay 2 - Package 2", ref buffer_relay, ref buffer_datetime, from,to);
                 if (rows_2 > 0)
                 {
                   for (int i = 0; i < rows_2; i++)
@@ -659,7 +673,7 @@ namespace listView_Test
 
                     return;
                 }
-                int rows_3 = Form1.access_db.Get_Infor_Pheri("Relay 3 - Fan 1", ref buffer_relay, ref buffer_datetime, selectedDate);
+                int rows_3 = Form1.access_db.Get_Infor_Pheri("Relay 3 - Fan 1", ref buffer_relay, ref buffer_datetime, from, to);
                 if (rows_3 > 0)
                 {
                     for (int i = 0; i < rows_3; i++)
@@ -673,7 +687,7 @@ namespace listView_Test
 
                     return;
                 }
-                int rows_4 = Form1.access_db.Get_Infor_Pheri("Relay 4 - Fan 2", ref buffer_relay, ref buffer_datetime, selectedDate);
+                int rows_4 = Form1.access_db.Get_Infor_Pheri("Relay 4 - Fan 2", ref buffer_relay, ref buffer_datetime, from, to);
                 if (rows_4 > 0)
                 {
                     for (int i = 0; i < rows_4; i++)
@@ -748,11 +762,17 @@ namespace listView_Test
             {
                 
                 cbPheri.Enabled = false;
+                dateTimePickerDate.Enabled = false;
+                dateTimePickerFrom.Enabled = false;
+                dateTimePickerTo.Enabled = false;
             }
             else
             {
                 chart_real_time = false;
                 cbPheri.Enabled = true;
+                dateTimePickerDate.Enabled = true;
+                dateTimePickerFrom.Enabled = true;
+                dateTimePickerTo.Enabled = true;
             }
         }
 
@@ -817,8 +837,9 @@ namespace listView_Test
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            PrintDialog a = new PrintDialog();
-            chart1.Printing.Print(true);
+            //PrintDialog a = new PrintDialog();
+            //chart1.Printing.Print(true);
+            reportPrinter1.Print();
         }
     }
 }

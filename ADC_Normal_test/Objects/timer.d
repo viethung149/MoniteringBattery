@@ -36,3 +36,4 @@
 .\objects\timer.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dac.h
 .\objects\timer.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dcmi.h
 .\objects\timer.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
+.\objects\timer.o: type.h

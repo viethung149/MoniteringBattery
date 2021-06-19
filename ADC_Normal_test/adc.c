@@ -131,6 +131,7 @@ float ADC_get_value_voltage_mv(ADC_TypeDef* ADCx, int numberRead, float voltage_
 //----------------------------------------------------------------------------------------------------
 float ADC_get_voltage_from_channel(ADC_TypeDef* ADCx, int numberRead, int channel,int module, float voltage_ref)
 {
+	
 	ADC_select_channel(module,channel);
 	module == 1 ? GPIO_ResetBits(PORT_MODULE1,PIN_SELECT_MODULE1[0]):GPIO_ResetBits(PORT_MODULE2,PIN_SELECT_MODULE2[0]); 
 	Dellay_us(1000);

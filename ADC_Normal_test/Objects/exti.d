@@ -36,3 +36,4 @@
 .\objects\exti.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dac.h
 .\objects\exti.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dcmi.h
 .\objects\exti.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
+.\objects\exti.o: type.h

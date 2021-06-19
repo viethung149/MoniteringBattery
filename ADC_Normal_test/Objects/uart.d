@@ -37,3 +37,5 @@
 .\objects\uart.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dcmi.h
 .\objects\uart.o: .\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
 .\objects\uart.o: type.h
+.\objects\uart.o: delay.h
+.\objects\uart.o: system_timetick.h

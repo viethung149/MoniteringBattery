@@ -55,9 +55,12 @@ void SPI_pin_nss_esp(void){
 }
 
 void SPI_send_data(BYTE* tx_buffer){
-	while(*tx_buffer != '\n'){
+	int i =0;
+	while(i<92){
 			SPI_I2S_SendData(SPI1,*(tx_buffer));
 		  while(SPI_I2S_GetFlagStatus(SPI1,SPI_I2S_FLAG_BSY)==SET);
 		  tx_buffer++;
+		  i++;
 	}
+ test_counter_send++;
 }

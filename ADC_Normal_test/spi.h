@@ -11,6 +11,7 @@
 #define NSS   GPIO_Pin_10
 #define NSS_ESP GPIO_Pin_15
 #define Handshark  GPIO_Pin_8
+extern int test_counter_send;
 void SPI_pin_config(void);
 void SPI_init(void);
 // NSS pin is PA10

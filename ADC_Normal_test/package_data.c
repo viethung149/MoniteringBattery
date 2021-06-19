@@ -1,5 +1,6 @@
 #include "package_data.h"
 void package_infor(){
+	printf("5. infor sent \n");
 	package_header( INFO, buffer_tx_uart, START_HEADER_INFO);	
 	package_data_infor(voltage_module1,SIZE_MODULE_1,voltage_module2,SIZE_MODULE_2, buffer_tx_uart,SIZE_BUFFER_TX,START_DATA_INFO);	
 	package_status_infor(Flag_battery, SIZE_BATTERY, Flag_temp,SIZE_TEMPERATURE,buffer_tx_uart,SIZE_BUFFER_TX,START_STATUS_INFO);
@@ -7,14 +8,17 @@ void package_infor(){
 	package_end (buffer_tx_uart,SIZE_BUFFER_TX,START_END_INFOR);
 	UART_PutString(buffer_tx_uart);
 	reset_buffer_tx(buffer_tx_uart,SIZE_BUFFER_TX);
+	printf("5. end infor sent \n");
 }
 void package_human(){
+	printf("6. infor human \n");
 	package_header( HUMAN_TOUCH, buffer_tx_uart, START_HEADER_HUMAN);
 	package_data_human(Flag_pheripheral,SIZE_PHERIPHERAL,buffer_tx_uart, SIZE_BUFFER_TX,START_DATA_HUMAN);
 	package_crc(buffer_tx_uart,SIZE_BUFFER_TX,START_CRC_HUMAN);
 	package_end(buffer_tx_uart,SIZE_BUFFER_TX,START_END_HUMAN);
 	UART_PutString(buffer_tx_uart);
 	reset_buffer_tx(buffer_tx_uart,SIZE_BUFFER_TX);
+	printf("6. infor human \n");
 }
 void package_emer(){
 	package_header( EMER, buffer_tx_uart, START_HEADER_EMER);
@@ -30,10 +34,7 @@ void package_infor_spi(){
 	package_status_infor(Flag_battery, SIZE_BATTERY, Flag_temp,SIZE_TEMPERATURE,buffer_tx_spi,SIZE_BUFFER_TX,START_STATUS_INFO);
 	package_crc(buffer_tx_spi,SIZE_BUFFER_TX,START_CRC_INFO);
 	package_end (buffer_tx_spi,SIZE_BUFFER_TX,START_END_INFOR);
-	GPIO_ResetBits(GPIOA,NSS);
-	SPI_send_data(buffer_tx_spi);
-	Dellay_ms_timer4(1);
-	GPIO_SetBits(GPIOA,NSS);
+	UART_PutString_stm32f103(buffer_tx_spi);
 }
 void package_human_spi(){
 	package_header( HUMAN_TOUCH, buffer_tx_spi, START_HEADER_HUMAN);
@@ -174,6 +175,7 @@ void package_data_emer(B_Voltage_status Flag_emer[], int size_flag_emer,BYTE buf
 
 // set flag emer in battery voltage and temperature
 void set_emer_flag(float* battery_voltage,int size_battery,float* temp_voltage,int size_temp,B_Voltage_status* Flag_emer,int size_emer_flag){
+	printf("4. set flag \n");
 			for(int i = 0 ;i< size_battery ;i++)
 			{
 				Flag_emer[i] = battery_voltage[i]> 4.2 ? MAX:((battery_voltage[i]<3.2)? MIN : NORMAL); 
@@ -181,7 +183,8 @@ void set_emer_flag(float* battery_voltage,int size_battery,float* temp_voltage,i
 			for(int i = 0 ;i< size_temp ;i++)
 			{
 				Flag_emer[i+8] = temp_voltage[i]> 100 ? MAX:((temp_voltage[i])<0 ? MIN: NORMAL); 
-			}	
+			}
+			printf("4. end set flag \n");
 }
 void set_flag(B_Voltage_status Flag[], int index , Style what,float value){
 	if(what == VOLTAGE){
@@ -214,9 +217,9 @@ void set_flag(B_Voltage_status Flag[], int index , Style what,float value){
 
 void get_current(float current_voltage[],float current_a[]){
 // get data from channel 	13 -14
-   current_voltage[0] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_1,MODULE1,VOLTAGE_REF)*CHANNEL_13;
-	 current_voltage[1] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_2,MODULE1,VOLTAGE_REF_CR1)*CHANNEL_14;
-	 current_voltage[2] = ADC_get_voltage_from_channel(ADC_MODULE1,5000,CHANNEL_CURRENT_3,MODULE1,VOLTAGE_REF_CR2)*CHANNEL_15;
+   current_voltage[0] = ADC_get_voltage_from_channel(ADC_MODULE1,NUMBER_READ_CURRENT,CHANNEL_CURRENT_1,MODULE1,VOLTAGE_REF)*CHANNEL_13;
+	 current_voltage[1] = ADC_get_voltage_from_channel(ADC_MODULE1,NUMBER_READ_CURRENT,CHANNEL_CURRENT_2,MODULE1,VOLTAGE_REF_CR1)*CHANNEL_14;
+	 current_voltage[2] = ADC_get_voltage_from_channel(ADC_MODULE1,NUMBER_READ_CURRENT,CHANNEL_CURRENT_3,MODULE1,VOLTAGE_REF_CR2)*CHANNEL_15;
 	// convert voltage to current 13 -14
 	 current_a[0] = voltage_to_current(SENSITIVE_13,current_voltage[0],VOLTAGE_CURRENT_OFFSET,CHANNEL_13_IO);
 	 current_a[1] = voltage_to_current(SENSITIVE_14,current_voltage[1],VOLTAGE_CURRENT_OFFSET,CHANNEL_14_IO);

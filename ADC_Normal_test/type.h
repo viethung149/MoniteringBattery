@@ -42,6 +42,7 @@ union floatToByte
 #define VOLTAGE_REF_CR1 2.9644
 #define VOLTAGE_REF_CR2 3.007
 #define NUMBER_READ 100
+#define NUMBER_READ_CURRENT 1000
 #define VOLTAGE_CURRENT_OFFSET 2500
 //-------------------- current measure------------------------------
 #define CURRENT_MAX_DISCHARGE 3
@@ -158,4 +159,10 @@ union floatToByte
 #define SIZE_BUFFER_ESP_TX 93 
 //--------------------- button ------------------------------
 #define SENSITIVE_BUTTON 10
+//--------------------- priority interrup ---------------------
+#define UART_READ_WINFORM     0
+#define TIMER_READ_BUTTON     1
+#define TIMER_ADC_READ        2
+#define EXTI_ESP32            3
+#define EXTI_STM32F103        4
 #endif

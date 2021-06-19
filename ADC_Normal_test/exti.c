@@ -1,5 +1,5 @@
 #include "exti.h"
-
+#include "type.h"
 void EXTI_Pin_config(void)
 {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD,ENABLE);
@@ -29,13 +29,15 @@ void EXTI_line_config(void)
 
 	NVIC_InitTypeDef   NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = EXTI_STM32F103;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 	
 	EXTI_InitStructure.EXTI_Line = EXTI_Line8;
 	EXTI_Init(&EXTI_InitStructure);
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = EXTI_ESP32;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	EXTI_Init(&EXTI_InitStructure);
 }

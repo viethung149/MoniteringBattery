@@ -11,6 +11,7 @@
 #include "package_data.h"
 #include "spi.h"
 #include "input_pin.h"
+int counter_tx = 0;
 #define MAX_READ 40 // 20 times mean 5ms*20 = 100ms ==> result what button was pressed
 float voltage_module1[SIZE_MODULE_1]={0};
 float voltage_module2[SIZE_MODULE_2]={0};
@@ -57,7 +58,12 @@ BYTE buffer_tx_uart[SIZE_BUFFER_TX]={0};
 int success_counter = 0;
 BYTE buffer_tx_spi[SIZE_BUFFER_TX]={0};
 BYTE buffer_tx_spi_esp[SIZE_BUFFER_ESP_TX]={0};
-
+int test_timer_5s =0;
+int test_counter_esp32 = 0;
+int test_counter_stm32f103 = 0;
+int test_counter_send = 0;
+int test_counter_button =0;
+int test_counter_sent =0;
 Status Read_uart_done=OFF;
 uint16_t PIN_SELECT_MODULE1[]={ENABLE_MODULE_1, 
 															 S0_MODULE_1,
@@ -91,7 +97,7 @@ int temp_ratio[]={TEM1_P1,
 //--adc--//
 BitAction READ_ADC_FLAG = Bit_RESET;
 void update_charge(){
-		NVIC_DisableIRQ(EXTI_Line8);
+		//NVIC_DisableIRQ(EXTI_Line8);
 		printf("Reading when charge\n");
 		if(Flag_pheripheral[RELAY_1] == ON) GPIO_SetBits(GPIOC, GPIO_Pin_2);
 		if(Flag_pheripheral[RELAY_2] == ON) GPIO_SetBits(GPIOC, GPIO_Pin_3);
@@ -122,7 +128,7 @@ void update_charge(){
 		Dellay_ms_timer4(1000);//2000ms
 		if(Flag_pheripheral[RELAY_1] == ON) GPIO_ResetBits(GPIOC, GPIO_Pin_2);
 		if(Flag_pheripheral[RELAY_2] == ON) GPIO_ResetBits(GPIOC, GPIO_Pin_3);
-		NVIC_EnableIRQ(EXTI_Line8);
+		//NVIC_EnableIRQ(EXTI_Line8);
 }
 
 void update_discharge(){
@@ -132,6 +138,7 @@ void update_discharge(){
 		for(int i =0 ; i < 4 ; i++ )
 		{
 			voltage_module2[i]= ADC_get_voltage_from_channel(ADC_MODULE2,NUMBER_READ,i,MODULE2,VOLTAGE_REF)*battery_ratio[i]-sum;
+			//voltage_module2[i]= ADC_get_voltage_from_channel(ADC_MODULE2,NUMBER_READ,i,MODULE2,VOLTAGE_REF)*battery_ratio[i];
 			// function set flag voltage
 			set_flag(Flag_battery,i,VOLTAGE,voltage_module2[i]);
 			sum += voltage_module2[i];
@@ -143,6 +150,7 @@ void update_discharge(){
 		for(int i = 4 ; i < SIZE_BATTERY ; i++ )
 		{
 			voltage_module2[i]= ADC_get_voltage_from_channel(ADC_MODULE2,NUMBER_READ,i,MODULE2,VOLTAGE_REF)*battery_ratio[i]-sum ;
+			//voltage_module2[i]= ADC_get_voltage_from_channel(ADC_MODULE2,NUMBER_READ,i,MODULE2,VOLTAGE_REF)*battery_ratio[i];
 			// function set flag voltage
 			set_flag(Flag_battery,i,VOLTAGE,voltage_module2[i]);
 			sum += voltage_module2[i];
@@ -154,6 +162,7 @@ void update_discharge(){
 
 
 void check_current(){
+	  printf("1. check current \n");
 		// check package 1, 2 for turn off relay pin PC 2, PC 3
     FAIL_CURRENT_P1 = OFF;
 		FAIL_CURRENT_P2 = OFF;	
@@ -196,9 +205,11 @@ void check_current(){
 					FAIL_CURRENT_ALL = ON;
 			 } 
 		}
+		printf("1. end check current \n");
 }
 void check_voltage(){
 		// check package 1, 2 for turn off relay pin PC 2, PC 3 
+	printf("2. check vottage \n");
 	  FAIL_VOLTAGE_P1 = OFF;
 	  FAIL_VOLTAGE_P2 = OFF;
 	    int counter_voltage_p1 =0;
@@ -233,9 +244,11 @@ void check_voltage(){
 				Flag_pheripheral[RELAY_2] = OFF;
 				FAIL_VOLTAGE_P2 = ON;
 			}
+		printf("2. end check vottage \n");
 }
 Status check_temperature(){
 		// check package 1, 2 for turn off relay pin PC 2, PC 3 
+	printf("3. check temperature \n");
 	  FAIL_TEMPERATURE_P1 = OFF;
 	  FAIL_TEMPERATURE_P2 = OFF;
 			for(int i = 0 ;i< 4 ;i++){
@@ -260,6 +273,7 @@ Status check_temperature(){
 					break;
 				}
 			}
+	 printf("3. check temperature \n");
 }
 void process_package1(void);
 void process_package2(void);
@@ -301,28 +315,43 @@ int fputc(int ch, FILE *f) {
 //	}
 //}
 //----------------------------------------------------------------------------------------------------
-// interrup timer 2
+/*
+* EACH 5000 ms read ADC to get the battery voltage
+* Preempriority 0
+* Subpriority 11
+*/
 void TIM2_IRQHandler(void) {
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)// kiem tra xem co ngat cua tim 2 bat chua
 	{	
+		test_timer_5s++;
     printf("IN TIMER READ ADC \n");
 		//TIM_Cmd(TIM2,DISABLE);	
 		if(READ_ADC_FLAG == Bit_RESET )
-		{	
+		{
+			printf("-----------IN READ---------\n");
+						//TIM_Cmd(TIM2,ENABLE);
+		  READ_ADC_FLAG=Bit_SET;
 			// get temperature ------------------------------------------------------------------------------------------------
+			printf("1. -----------IN READ temper---------\n");
 			for(int i =0 ; i < SIZE_TEMPERATURE ; i++ )
 			{
 				voltage_module1[i]= ADC_get_voltage_from_channel(ADC_MODULE1,NUMBER_READ,i,MODULE1,VOLTAGE_REF)*temp_ratio[i];
 				//function set flag temperature
 				set_flag(Flag_temp,i,TEMPERATURE,voltage_module1[i]);
 			}
+			printf("1. -----------END READ temper---------\n");
 			// get current from module 1 
+			printf("2. -----------IN READ current---------\n");
 			get_current(current_voltage,current_a);
 			voltage_module1[8] = current_a[0];
 			voltage_module1[9] = current_a[1];
 			voltage_module1[10] = current_a[2];
-			
+//				voltage_module1[8] = 0;
+//			voltage_module1[9] = 0;
+//			voltage_module1[10] = 0;
+			printf("2. -----------end READ current---------\n");
 			// if either current package1 or current package 2 is greater than zero -> in charge mod
+			printf("3. -----------UPDATE STATUS---------\n");
 			if(current_a[1] > 0 || current_a[2] > 0){
 				IN_CHARGING = ON;
 				IN_DISCHARGING = OFF;
@@ -336,8 +365,10 @@ void TIM2_IRQHandler(void) {
 				IN_CHARGING = OFF;
 				IN_DISCHARGING = OFF;
 			}
+			printf("3. -----------END UPDATE STATUS---------\n");
 			counter_charge++;
 			// for read when charging
+			printf("4. -----------IN UPDATE SEND---------\n");
 			if(counter_charge == 2 && IN_CHARGING == ON ){
 				update_charge();
 			}
@@ -348,16 +379,24 @@ void TIM2_IRQHandler(void) {
 			else{
 				update_discharge();
 			}
+			printf("4. -----------END UPDATE SEND---------\n");
+			
 		}
-		//TIM_Cmd(TIM2,ENABLE);
-		READ_ADC_FLAG=Bit_SET;
+
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);//xoa co  ngat nho thanh  ghi pending bit
 		}
 }
+/*
+* Read status button 
+* Preempriority 0
+* Subpriority 12
+*/
 ////--------------------------------------------------------------------------------------------
 void TIM5_IRQHandler(void) {
 	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET)// kiem tra xem co ngat cua tim 2 bat chua
 	{	
+		test_counter_button++;
+		if(test_counter_button>10000) test_counter_button =0;
 		overall_cnt++;
 		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_2) == Bit_SET) btn_package1_cnt++;
 		if(GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_3) == Bit_SET) btn_package2_cnt++;
@@ -396,32 +435,38 @@ void reset_buffer_rx(BYTE buffer_rx[],int size){
 }
 int main()
 {
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	printf("Test ADC /n");
 	SystemInit();
 	ADC_pin_select_config();
 	ADC_pin_config();
 	timetick_configure();
-	UART_pin_config();
-	UART_init_config();
-	EXTI_Pin_config();
-	EXTI_line_config();
 	INPUT_Pin_config();
 	//init_data_test(voltage_module1,SIZE_MODULE_1,voltage_module2,SIZE_MODULE_2,Flag_battery,SIZE_BATTERY,Flag_temp, SIZE_TEMPERATURE);
 	STATUS_pin_peripheral_config();
 	STATUS_off_all_peripheral();
-	TIMER_interupt_config();
-	TIMER_read_button(5);
 	SPI_pin_config();
 	SPI_init();
 	SPI_pin_nss();
 	SPI_pin_nss_esp();
+	UART_pin_config();
+	UART_init_config();
 	UART_pin_config_esp();
 	UART_init_config_esp();
-	
+	UART_pin_stm32f103();
+	UART_config_stm32f103();
+	TIMER_interupt_config();
+	TIMER_read_button(5);
+	EXTI_Pin_config();
+	EXTI_line_config();
 	while(1)
 	{
 	  if(READ_ADC_FLAG == Bit_SET)
 		{
+			READ_ADC_FLAG = Bit_RESET;
+			//----------------------------------------------------------------------------------------------------
+			
+			//----------------------------------------------------------------------------------------------------
 			 printf("IN CHECK INFOR SEND UPDATE \n");
 			//TIM_Cmd(TIM2,DISABLE);
 			//TIM_Cmd(TIM5,DISABLE);
@@ -429,9 +474,10 @@ int main()
 			check_current();
 			check_voltage();
 			check_temperature();
-			if(counter_charge == 2){
+			if(counter_charge >= 2){
 				//BYTE test[] ={'H','U','N','G','\n'};
 				//UART_PutString_esp(test);
+				test_counter_sent++;
 				set_emer_flag(voltage_module2, SIZE_BATTERY, voltage_module1, SIZE_TEMPERATURE, Flag_emer, SIZE_EMER);
 				//GPIO_ToggleBits(GPIOA, NSS);
         //package_emer();
@@ -441,7 +487,7 @@ int main()
 			}
 			//TIM_Cmd(TIM2,ENABLE);
 			//TIM_Cmd(TIM5,ENABLE);
-			READ_ADC_FLAG = Bit_RESET;
+			
 		}
 		if(Read_uart_done == ON){
 			printf("IN UPDATE RELAY FROM SOLFWARE \n");
@@ -459,17 +505,30 @@ int main()
 
 void EXTI9_5_IRQHandler(void){
 	// handler handshark spi stm32f103
+	/*
+	* When stm32f103 request to read information 
+	* Preempriority 0
+	* Subpriority 13
+	*/
 	if(EXTI_GetITStatus(EXTI_Line6) != RESET)
   {
 		Dellay_us(1000);
 		// send frame SPI 
 		package_infor_spi();
+		test_counter_stm32f103++;
     EXTI_ClearITPendingBit(EXTI_Line6);
   }
 	// handler handshark spi esp32
 	if(EXTI_GetITStatus(EXTI_Line8) != RESET)
   {
+	/*
+	* When esp32 requests information
+	* Preempriority 0
+	* Subpriority 14
+	*/
+	test_counter_esp32++;	
 		Dellay_us(1000);
+		READ_ADC_FLAG= Bit_RESET;
     package_infor_spi_esp();
     EXTI_ClearITPendingBit(EXTI_Line8);
   }
@@ -544,6 +603,11 @@ void process_fan2(void){
 	printf("press button Fan2 \n");
 }
 // read uart
+	/*
+	* When control button in app winform
+	* Preempriority 0
+	* Subpriority 15
+	*/
 void USART1_IRQHandler(void)
 {
 	while(USART_GetITStatus(USART1,USART_IT_RXNE)==1)

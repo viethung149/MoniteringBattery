@@ -1,1 +1,6 @@
 *.pdf
+ADC_Normal_test/DebugConfig/
+ADC_Normal_test/Listings/
+ADC_Normal_test/Objects/
+ADC_Normal_test/RTE/
+ADC_Normal_test/STM32F4xx_StdPeriph_Driver/

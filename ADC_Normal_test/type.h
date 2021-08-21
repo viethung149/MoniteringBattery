@@ -39,8 +39,9 @@ union floatToByte
 };
 //------------------- constant value ----------------------
 #define VOLTAGE_REF 2.9622
-#define VOLTAGE_REF_CR1 2.9644
-#define VOLTAGE_REF_CR2 3.007
+#define VOLTAGE_REF_CR1 3.035
+#define VOLTAGE_REF_CR2 2.99997
+#define  VOLTAGE_REF_ALL 2.9955603
 #define NUMBER_READ 100
 #define NUMBER_READ_CURRENT 1000
 #define VOLTAGE_CURRENT_OFFSET 2500
@@ -55,9 +56,9 @@ union floatToByte
 #define CHANNEL_15      1.9855
 #define CHANNEL_14      1.962
 #define CHANNEL_13      2.0
-#define SENSITIVE_15    110.42857
-#define SENSITIVE_14    118
-#define SENSITIVE_13    100
+#define SENSITIVE_15    120.67
+#define SENSITIVE_14    112.52
+#define SENSITIVE_13    106.6225
 //---------------------- define select pin-----------------------
 #define MODULE1 				1
 #define PORT_MODULE1     GPIOD 
@@ -165,4 +166,8 @@ union floatToByte
 #define TIMER_ADC_READ        2
 #define EXTI_ESP32            3
 #define EXTI_STM32F103        4
+#define MAX_TEMPERATURE 45
+#define MIN_TEMPERATURE 0
+#define MAX_VOLTAGE 4.2
+#define MIN_VOLTAGE 3.2
 #endif

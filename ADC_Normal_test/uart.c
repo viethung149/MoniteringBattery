@@ -80,7 +80,7 @@ void UART_pin_config(void)
 	GPIO_PinAFConfig (GPIOB,GPIO_PinSource6, GPIO_AF_USART1);
 	GPIO_PinAFConfig (GPIOB,GPIO_PinSource7, GPIO_AF_USART1);
 }
-//PE 8 TX
+//PC10 TX
 void UART_pin_stm32f103(void)
 {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE);

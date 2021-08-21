@@ -35,6 +35,8 @@ void package_infor_spi(){
 	package_crc(buffer_tx_spi,SIZE_BUFFER_TX,START_CRC_INFO);
 	package_end (buffer_tx_spi,SIZE_BUFFER_TX,START_END_INFOR);
 	UART_PutString_stm32f103(buffer_tx_spi);
+	for(int i =0 ;i<150;i++)
+	buffer_tx_spi[i] = 0x00;
 }
 void package_human_spi(){
 	package_header( HUMAN_TOUCH, buffer_tx_spi, START_HEADER_HUMAN);
@@ -176,23 +178,85 @@ void package_data_emer(B_Voltage_status Flag_emer[], int size_flag_emer,BYTE buf
 // set flag emer in battery voltage and temperature
 void set_emer_flag(float* battery_voltage,int size_battery,float* temp_voltage,int size_temp,B_Voltage_status* Flag_emer,int size_emer_flag){
 	printf("4. set flag \n");
-			for(int i = 0 ;i< size_battery ;i++)
-			{
-				Flag_emer[i] = battery_voltage[i]> 4.2 ? MAX:((battery_voltage[i]<3.2)? MIN : NORMAL); 
+			float mean_voltage_p1 =0;
+	    float mean_voltage_p2 =0;
+	    float mean_temperature_p1 = 0;
+	    float mean_temperature_p2 = 0;
+			for(int i = 0;i<size_battery/2;i++){
+				mean_voltage_p1 += battery_voltage[i];
 			}
+			mean_voltage_p1/=4;//mean voltage p1
+			for(int i = 4;i<size_battery;i++){
+				mean_voltage_p2 += battery_voltage[i];
+			}
+			mean_voltage_p2/=4;//mean voltage p2
+			for(int i = 0;i<size_temp/2;i++){
+				mean_temperature_p1 += temp_voltage[i];
+			}
+			mean_temperature_p1/=4;//mean temperature p1
+			for(int i = 4;i<size_temp;i++){
+				mean_temperature_p2 += temp_voltage[i];
+			}
+			mean_temperature_p2/=4;//mean temperature p2
+			
 			for(int i = 0 ;i< size_temp ;i++)
 			{
-				Flag_emer[i+8] = temp_voltage[i]> 100 ? MAX:((temp_voltage[i])<0 ? MIN: NORMAL); 
+				Flag_emer[i] = battery_voltage[i]> MAX_VOLTAGE ? MAX:((battery_voltage[i]<MIN_VOLTAGE)? MIN : NORMAL); 
 			}
+			for(int i = 0;i<size_temp/2;i++){
+				 float delta = temp_voltage[i] - mean_temperature_p1;
+				 if((delta > 0 && delta >5) || (delta < 0 && delta < -5)){
+					Flag_emer[i] = MAX;
+				 }
+				 else
+				 {
+					Flag_emer[i] = NORMAL;
+				 }
+		 }
+			for(int i = 4;i<size_temp;i++){
+				 float delta = temp_voltage[i] - mean_temperature_p1;
+				 if((delta > 0 && delta >0.25) || (delta < 0 && delta < -0.25)){
+					Flag_emer[i] = MAX;
+				 }
+				 else
+				 {
+					Flag_emer[i] = NORMAL;
+				 }
+		 }
+			for(int i = 0 ;i< size_temp ;i++)
+			{
+				Flag_emer[i+8] = temp_voltage[i]> MAX_TEMPERATURE ? MAX:((temp_voltage[i])<MIN_TEMPERATURE ? MIN: NORMAL); 
+			}
+			// check can ban giua cac cell
+			for(int i = 0;i<size_battery/2;i++){
+				 float delta = battery_voltage[i] - mean_voltage_p1;
+				 if((delta > 0 && delta >0.25) || (delta < 0 && delta < -0.25)){
+					Flag_emer[i+8] = MAX;
+				 }
+				 else
+				 {
+					Flag_emer[i+8] =NORMAL;
+				 }
+		 }
+			for(int i = 4;i<size_battery;i++){
+				 float delta = battery_voltage[i] - mean_voltage_p2;
+				 if((delta > 0 && delta >0.25) || (delta < 0 && delta < -0.25)){
+					Flag_emer[i+8] = MAX;
+				 }
+				 else
+				 {
+					Flag_emer[i+8] =NORMAL;
+				 }
+		 }
 			printf("4. end set flag \n");
 }
 void set_flag(B_Voltage_status Flag[], int index , Style what,float value){
 	if(what == VOLTAGE){
-		if(value> 4.2 ){
+		if(value> MAX_VOLTAGE ){
 			// over voltage need to turn of package 1
 			Flag[index] = MAX;
 		}
-		else if(value < 3.2){
+		else if(value < MIN_VOLTAGE){
 			// over discharge need to turn off package 1
 			Flag[index] = MIN;
 		}
@@ -201,11 +265,11 @@ void set_flag(B_Voltage_status Flag[], int index , Style what,float value){
 	}
 	else if(what == TEMPERATURE){
 		// set flag battery temperature
-		if(value > 100 ){
+		if(value > MAX_TEMPERATURE ){
 			// over voltage need to turn of package 1
 			Flag[index] = MAX;
 		}
-		else if(value < 0){
+		else if(value < MIN_TEMPERATURE){
 			// over discharge need to turn off package 1
 			Flag[index] = MIN;
 		}
@@ -217,13 +281,13 @@ void set_flag(B_Voltage_status Flag[], int index , Style what,float value){
 
 void get_current(float current_voltage[],float current_a[]){
 // get data from channel 	13 -14
-   current_voltage[0] = ADC_get_voltage_from_channel(ADC_MODULE1,NUMBER_READ_CURRENT,CHANNEL_CURRENT_1,MODULE1,VOLTAGE_REF)*CHANNEL_13;
+   current_voltage[0] = ADC_get_voltage_from_channel(ADC_MODULE1,NUMBER_READ_CURRENT,CHANNEL_CURRENT_1,MODULE1,VOLTAGE_REF_ALL)*CHANNEL_13;
 	 current_voltage[1] = ADC_get_voltage_from_channel(ADC_MODULE1,NUMBER_READ_CURRENT,CHANNEL_CURRENT_2,MODULE1,VOLTAGE_REF_CR1)*CHANNEL_14;
 	 current_voltage[2] = ADC_get_voltage_from_channel(ADC_MODULE1,NUMBER_READ_CURRENT,CHANNEL_CURRENT_3,MODULE1,VOLTAGE_REF_CR2)*CHANNEL_15;
 	// convert voltage to current 13 -14
-	 current_a[0] = voltage_to_current(SENSITIVE_13,current_voltage[0],VOLTAGE_CURRENT_OFFSET,CHANNEL_13_IO);
-	 current_a[1] = voltage_to_current(SENSITIVE_14,current_voltage[1],VOLTAGE_CURRENT_OFFSET,CHANNEL_14_IO);
-	 current_a[2] = voltage_to_current(SENSITIVE_15,current_voltage[2],VOLTAGE_CURRENT_OFFSET,CHANNEL_15_IO);
+	 current_a[0] = voltage_to_current(SENSITIVE_13,current_voltage[0],VOLTAGE_CURRENT_OFFSET,CHANNEL_13_IO)+0.15;
+	 current_a[1] = voltage_to_current(SENSITIVE_14,current_voltage[1],VOLTAGE_CURRENT_OFFSET,CHANNEL_14_IO)+0.15;
+	 current_a[2] = voltage_to_current(SENSITIVE_15,current_voltage[2],VOLTAGE_CURRENT_OFFSET,CHANNEL_15_IO)+0.15;
 }
 // set the package to send to esp32
 void package_infor_spi_esp(){

@@ -11,6 +11,10 @@
 #include "package_data.h"
 #include "spi.h"
 #include "input_pin.h"
+int timer_disconnect_p1=0;
+int timer_disconnect_p2=0;
+Status SIGNAL_DISCONNECT_P1=OFF;
+Status SIGNAL_DISCONNECT_P2=OFF;
 int counter_tx = 0;
 #define MAX_READ 40 // 20 times mean 5ms*20 = 100ms ==> result what button was pressed
 float voltage_module1[SIZE_MODULE_1]={0};
@@ -212,37 +216,27 @@ void check_voltage(){
 	printf("2. check vottage \n");
 	  FAIL_VOLTAGE_P1 = OFF;
 	  FAIL_VOLTAGE_P2 = OFF;
-	    int counter_voltage_p1 =0;
+	  SIGNAL_DISCONNECT_P1 = OFF;
+	  SIGNAL_DISCONNECT_P2 = OFF;
 			for(int i = 0 ;i< 4 ;i++){
 			  if(Flag_battery[i] == MAX){
-					 counter_voltage_p1++;
+					 SIGNAL_DISCONNECT_P1 = ON;
 				}
-				else if(Flag_battery[i] ==MIN){
+				else if(Flag_battery[i] == MIN){
 					GPIO_SetBits(GPIOC, GPIO_Pin_2);
 					Flag_pheripheral[RELAY_1] = OFF;
 					FAIL_VOLTAGE_P1 = ON;
 				}
 			}
-			if(counter_voltage_p1 == 4){
-					GPIO_SetBits(GPIOC, GPIO_Pin_2);
-					Flag_pheripheral[RELAY_1] = OFF;
-					FAIL_VOLTAGE_P1 = ON;
-			}
-			int counter_voltage_p2 =0;
 			for(int i = 4 ;i< 8 ;i++){
 			  if(Flag_battery[i] == MAX){
-					counter_voltage_p2++;
+					SIGNAL_DISCONNECT_P2= ON;
 				}
 				else if(Flag_battery[i] == MIN){
 					GPIO_SetBits(GPIOC, GPIO_Pin_3);
 					Flag_pheripheral[RELAY_2] = OFF;
 					FAIL_VOLTAGE_P2 = ON;
 				}
-			}
-			if(counter_voltage_p2==4){
-				GPIO_SetBits(GPIOC, GPIO_Pin_3);
-				Flag_pheripheral[RELAY_2] = OFF;
-				FAIL_VOLTAGE_P2 = ON;
 			}
 		printf("2. end check vottage \n");
 }
@@ -343,9 +337,9 @@ void TIM2_IRQHandler(void) {
 			// get current from module 1 
 			printf("2. -----------IN READ current---------\n");
 			get_current(current_voltage,current_a);
-			voltage_module1[8] = current_a[0];
-			voltage_module1[9] = current_a[1];
-			voltage_module1[10] = current_a[2];
+			voltage_module1[8] = current_a[0]-0.15; // current all
+			voltage_module1[9] = current_a[1]-0.15; // current package 1
+			voltage_module1[10] = current_a[2]-0.15;// current package 2
 //				voltage_module1[8] = 0;
 //			voltage_module1[9] = 0;
 //			voltage_module1[10] = 0;
@@ -382,7 +376,25 @@ void TIM2_IRQHandler(void) {
 			printf("4. -----------END UPDATE SEND---------\n");
 			
 		}
-
+		// make disconnect
+		if(SIGNAL_DISCONNECT_P1 == ON){
+			timer_disconnect_p1 ++;
+		}
+		if (timer_disconnect_p1 == 2){
+					GPIO_SetBits(GPIOC, GPIO_Pin_2);
+					Flag_pheripheral[RELAY_1] = OFF;
+					FAIL_VOLTAGE_P1 = ON;
+			    timer_disconnect_p1=0;
+		}
+		if(SIGNAL_DISCONNECT_P2 == ON){
+			timer_disconnect_p2 ++;
+		}
+		if (timer_disconnect_p2 == 2){
+					GPIO_SetBits(GPIOC, GPIO_Pin_3);
+					Flag_pheripheral[RELAY_1] = OFF;
+					FAIL_VOLTAGE_P1 = ON;
+			    timer_disconnect_p2=0;
+		}
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);//xoa co  ngat nho thanh  ghi pending bit
 		}
 }

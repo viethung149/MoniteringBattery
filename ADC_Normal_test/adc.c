@@ -163,13 +163,13 @@ float voltage_to_current(float sensitive, float voltage, int offset, Status chan
 	int denta = voltage_mv - offset;
 	float current_a =0;
 	// current out
-	if(denta > 0 && denta > 15){
+	if(denta > 0 && denta > 9){
 		channel_current_IO = ON;
 		current_a = (float)denta/(float)sensitive;
 		return current_a;
 	}
 	// current in 
-	else if(denta <0 && denta < -15){
+	else if(denta <0 && denta < -9){
 		channel_current_IO = OFF;
 		current_a = ((float)denta/sensitive);
 		return current_a;

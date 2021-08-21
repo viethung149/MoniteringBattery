@@ -38,6 +38,7 @@ namespace listView_Test
         {
             get { return objectMonitor; }
         }
+        
         void LoadComboBoxWayMonitoring() {
             cbWay.Items.Add("Real Time");
             cbWay.Items.Add("History");
@@ -77,7 +78,13 @@ namespace listView_Test
             LoadComboBoxPheripheralInformation();
             cBVoltage.Checked = true;
             configChart("Time", "Voltage", "Monitoring", 0, 20);
-        
+            dateTimePickerFrom.Format = DateTimePickerFormat.Custom;
+            dateTimePickerFrom.CustomFormat = "HH:mm tt";
+            dateTimePickerFrom.Value = DateTime.Now.AddHours(-1);
+            dateTimePickerTo.Format = DateTimePickerFormat.Custom;
+            dateTimePickerTo.CustomFormat = "HH:mm tt";
+            dateTimePickerTo.Value = DateTime.Now.AddMinutes(-5);
+
         }
 
         public void configChart(string titleAxisX, string titleAxisY, string title, int minY, int maxY)
@@ -168,6 +175,7 @@ namespace listView_Test
             chart1.Titles.Clear();
             chart1.Titles.Add(title_chart);
             chart1.ChartAreas[0].AxisX.Title = titleAxisX;
+            chart1.ChartAreas[0].AxisX.Title = titleAxisX;
             chart1.ChartAreas[0].AxisY.Title = titleAxisY;
             // set y max min
             chart1.ChartAreas[0].AxisY.Minimum = minY;
@@ -200,6 +208,11 @@ namespace listView_Test
             chart1.Series["Relay4 - Fan2"].Color = Color.BlanchedAlmond;
             chart1.Series[0].Points.Add();
         }
+        /// <summary>
+        /// button accept draw the chart realtime or history
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button1_Click(object sender, EventArgs e)
         {
             string ItemComboBoxWhat = cbWhat.SelectedItem.ToString();
@@ -219,11 +232,15 @@ namespace listView_Test
             }
             else if (currentChart)
             {
-                chart1.ChartAreas[0].AxisY.Maximum = Constant.MAX_CURREN;
+                chart1.ChartAreas[0].AxisY.Maximum = Constant.MAX_CURREN+0.2;
+              
             }
             else
             {
                 chart1.ChartAreas[0].AxisY.Maximum = Constant.MAX_Y_PHERI;
+            }
+            if (currentChart) {
+                chart1.ChartAreas[0].AxisY.Minimum = -Constant.MAX_CURREN + 0.2;
             }
             if (ItemComboBoxWhat == "--None--" && ItemComboBoxPheri == "--None--") {
                 MessageBox.Show("Please select what elements you want to monitoring", "Missing information",
@@ -261,6 +278,7 @@ namespace listView_Test
                 // if monitoring package + pheripheral
                 if (is_monitor_package_peri(ItemComboBoxWhat, ItemComboBoxPheri))
                 {
+                    
                     string namePackage = get_name_package(ItemComboBoxWhat);
                     render_chart_only_package(namePackage, from, to, voltageChart, temperatureChart, currentChart);
                     string namePheri = get_name_pheri(ItemComboBoxPheri);
@@ -299,16 +317,18 @@ namespace listView_Test
         // function render chart after click button 
         public void render_chart(string WhatMonitor, string WhatPheripheral, bool ifVoltage, bool ifTemperature, bool ifCurrent)
         {
-            configChart("Time", "Voltage", "Monitoring", 0, 20);
+            configChart("Time", "Voltage (V) ", "Monitoring Package 2", 0, 20);
+            string tittleY = "";
+            string tittle = "Monitor ";
             if (cbPheri.Enabled == false) {
                 if (!ifVoltage)
                 {
                     chart1.Series.Remove(chart1.Series["Voltage"]);
+                    
                 }
                 if (!ifTemperature)
                 {
                     chart1.Series.Remove(chart1.Series["Temperature"]);
-
                 }
                 if (!ifCurrent)
                 {
@@ -745,7 +765,12 @@ namespace listView_Test
        
         private void btnScale_Click(object sender, EventArgs e)
         {
-            // feature auto scale
+            if ((chart1.Tag as ChartScaleData).isZoomed == true)
+            {
+                Console.WriteLine("Zoom out chart 1");
+                (chart1.Tag as ChartScaleData).ResetAxisScale();
+                (chart1.Tag as ChartScaleData).isZoomed = false;
+            }
         }
 
         private void Chart_Form_FormClosing(object sender, FormClosingEventArgs e)
@@ -840,6 +865,170 @@ namespace listView_Test
             //PrintDialog a = new PrintDialog();
             //chart1.Printing.Print(true);
             reportPrinter1.Print();
+        }
+        // ZOOM 
+        Rectangle zoomRectChart1;
+        bool zoomingChart1Now = false;
+        private void chart1_MouseDown(object sender, MouseEventArgs e)
+        {
+            Console.WriteLine("Chart Real Time Move down");
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+                return;
+            this.Focus();
+            //Test for Ctrl + Left Single Click to start displaying selection box
+            if ((e.Button == MouseButtons.Left) && (e.Clicks == 1) &&
+                    ((ModifierKeys & Keys.Control) != 0) && sender is Chart)
+            {
+                zoomingChart1Now = true;
+                zoomRectChart1.Location = e.Location;
+                zoomRectChart1.Width = zoomRectChart1.Height = 0;
+                DrawZoomRect(); //Draw the new selection rect
+            }
+            this.Focus();
+        }
+
+        private void chart1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (zoomingChart1Now)
+            {
+                DrawZoomRect(); //Redraw the old selection 
+                                //rect, which erases it
+                zoomRectChart1.Width = e.X - zoomRectChart1.Left;
+                zoomRectChart1.Height = e.Y - zoomRectChart1.Top;
+                DrawZoomRect(); //Draw the new selection rect
+            }
+        }
+
+        private void chart1_MouseUp(object sender, MouseEventArgs e)
+        {
+            Console.WriteLine("Move up in real time chart");
+            if (zoomingChart1Now && e.Button == MouseButtons.Left)
+            {
+                DrawZoomRect(); //Redraw the selection 
+                                //rect, which erases it
+                if ((zoomRectChart1.Width != 0) && (zoomRectChart1.Height != 0))
+                {
+                    //Just in case the selection was dragged from lower right to upper left
+                    zoomRectChart1 = new Rectangle(Math.Min(zoomRectChart1.Left, zoomRectChart1.Right),
+                            Math.Min(zoomRectChart1.Top, zoomRectChart1.Bottom),
+                            Math.Abs(zoomRectChart1.Width),
+                            Math.Abs(zoomRectChart1.Height));
+                    ZoomInToZoomRect(); //no Shift so Zoom in.
+                }
+                zoomingChart1Now = false;
+            }
+        }
+        bool useGDI32_chart1 = true;
+        private void DrawZoomRect()
+        {
+            Pen pen = new Pen(Color.Black, 1.0f);
+            pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+            if (useGDI32_chart1)
+            {
+                //This is so much smoother than ControlPaint.DrawReversibleFrame
+                GDI32.DrawXORRectangle(chart1.CreateGraphics(), pen, zoomRectChart1);
+            }
+            else
+            {
+                Rectangle screenRect = chart1.RectangleToScreen(zoomRectChart1);
+                ControlPaint.DrawReversibleFrame(screenRect, chart1.BackColor, FrameStyle.Dashed);
+            }
+        }
+        private void ZoomInToZoomRect()
+        {
+            if (zoomRectChart1.Width == 0 || zoomRectChart1.Height == 0)
+                return;
+            Rectangle r = zoomRectChart1;
+            ChartScaleData csd = chart1.Tag as ChartScaleData;
+            Console.WriteLine(chart1.Tag);
+            if (csd == null)
+            {
+                Console.WriteLine("Not declare");
+                return;
+            }
+            Rectangle ipr = csd.innerPlotRectangle;
+            if (!r.IntersectsWith(ipr))
+                return;
+            r.Intersect(ipr);
+            if (!csd.isZoomed)
+            {
+                csd.isZoomed = true;
+                csd.UpdateAxisBaseData();
+            }
+            SetZoomAxisScale(chart1.ChartAreas[0].AxisX, r.Left, r.Right);
+            SetZoomAxisScale(chart1.ChartAreas[0].AxisY, r.Bottom, r.Top);
+        }
+        private void SetZoomAxisScale(Axis axis, int pxLow, int pxHi)
+        {
+
+            Console.WriteLine("-----------------start function SetZoomAxisScale----------------");
+            double minValue = Math.Max(axis.Minimum, axis.PixelPositionToValue(pxLow));
+            double maxValue = Math.Min(axis.Maximum, axis.PixelPositionToValue(pxHi));
+            double axisInterval = 0.2;
+            double axisIntMinor = 0.2;
+            Console.WriteLine("minValue {0}", minValue);
+            Console.WriteLine("maxValue {0}", maxValue);
+            Console.WriteLine("axisInterval {0}", axisInterval);
+            Console.WriteLine("axisIntMinor {0}", axisIntMinor);
+            axisInterval = (maxValue - minValue) / 5d;
+            axis.Minimum = minValue;
+            axis.Maximum = maxValue;
+            // axis.Interval = axisInterval;
+            // axis.MinorTickMark.Interval = axisIntMinor;
+            SetAxisFormats();
+            Console.WriteLine("-----------------end function SetZoomAxisScale------------------------");
+        }
+        private void SetAxisFormats()
+        {
+            if (true)
+            {
+                chart1.ChartAreas[0].AxisX.LabelStyle.Format = "hh:mm:ss tt";
+                chart1.ChartAreas[0].AxisY.LabelStyle.Format = "F2";
+            }
+        }
+
+        private void chart1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if ((chart1.Tag as ChartScaleData).isZoomed == true)
+            {
+                Console.WriteLine("Zoom out chart 1");
+                (chart1.Tag as ChartScaleData).ResetAxisScale();
+                (chart1.Tag as ChartScaleData).isZoomed = false;
+            }
+        }
+
+        private void Chart_Form_Load(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cBinDateorTime.Checked)
+            {
+                dateTimePickerFrom.Value = DateTime.Now.AddHours(-1);
+                dateTimePickerTo.Value = DateTime.Now.AddMinutes(-5);
+            }
+            else
+            {
+                dateTimePickerFrom.Value = new DateTime(2021, 06, 19, 0, 0, 0);
+                dateTimePickerTo.Value = new DateTime(2021, 06, 19, 23, 59, 0);
+            }
+        }
+
+        private void dateTimePickerDate_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dateTimePickerFrom_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Chart_Form_Load_1(object sender, EventArgs e)
+        {
+
         }
     }
 }

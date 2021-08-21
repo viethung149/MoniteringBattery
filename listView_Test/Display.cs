@@ -21,6 +21,7 @@ namespace listView_Test
             // row is less than 8 and greater than 0
             if (row <= Constant.NUMBER_BATTERY && row >= 0)
             {
+                f.CustomListView_Battery.Items[row-1].UseItemStyleForSubItems = false;
                 string[] arr = new string[Constant.TAB_BATTERY_COLUMN];
                 arr[0] = battery_data.voltage.ToString();
                 arr[1] = battery_data.temperature.ToString();
@@ -31,11 +32,22 @@ namespace listView_Test
                 {
                     f.CustomListView_Battery.Items[row - 1].SubItems.RemoveAt(1);
                 }
-                foreach (var item in arr)
+                for (int i =0;i<Constant.TAB_BATTERY_COLUMN;i++)
                 {
-                    ListViewItem.ListViewSubItem subItem = new ListViewItem.ListViewSubItem() { Text = item };
+                    ListViewItem.ListViewSubItem subItem = new ListViewItem.ListViewSubItem() { Text = arr[i] };
                     f.CustomListView_Battery.Items[row - 1].SubItems.Add(subItem);
+                    if (arr[i] =="Emergency")
+                    {
+                        f.CustomListView_Battery.Items[row-1].SubItems[i+1].BackColor = Color.Red;
+                      
+                    }
+                    else
+                    {
+                        f.CustomListView_Battery.Items[row - 1].SubItems[i + 1].BackColor = Color.White;
+                       
+                    }
                 }
+           
             }
 
         }
@@ -43,6 +55,7 @@ namespace listView_Test
         {
             if (row <= Constant.NUMBER_PACKET && row >= 0)
             {
+                f.CustomListView_Package.Items[row - 1].UseItemStyleForSubItems = false;
                 string[] arr = new string[6];
                 arr[0] = package.capacity.ToString();
                 arr[1] = package.temperater.ToString();
@@ -57,10 +70,20 @@ namespace listView_Test
                 {
                     f.CustomListView_Package.Items[row - 1].SubItems.RemoveAt(1);
                 }
-                foreach (var item in arr)
+                for (int i = 0; i < 6; i++)
                 {
-                    ListViewItem.ListViewSubItem subItem = new ListViewItem.ListViewSubItem() { Text = item };
+                    ListViewItem.ListViewSubItem subItem = new ListViewItem.ListViewSubItem() { Text = arr[i] };
                     f.CustomListView_Package.Items[row - 1].SubItems.Add(subItem);
+                    if (arr[i] == "Emergency")
+                    {
+                        f.CustomListView_Package.Items[row - 1].SubItems[i + 1].BackColor = Color.Red;
+                       // f.CustomListView_Package.Items[row - 1].SubItems[0].BackColor = Color.Red;
+                    }
+                    else
+                    {
+                        f.CustomListView_Package.Items[row - 1].SubItems[i + 1].BackColor = Color.White;
+                       // f.CustomListView_Package.Items[row - 1].SubItems[0].BackColor = Color.White;
+                    }
                 }
             }
         }
@@ -68,16 +91,25 @@ namespace listView_Test
         {
             if (row <= 4 && row >= 0)
             {
+                f.CustomListView_Pheripheral.Items[row - 1].UseItemStyleForSubItems = false;
                 string[] arr = new string[1];
-                arr[0] = pheri.status_connect == true ? "connect" : "disconnect";
+                arr[0] = pheri.status_connect == true ? "ON" : "OFF";
                 while (f.CustomListView_Pheripheral.Items[row - 1].SubItems.Count != 1)
                 {
                     f.CustomListView_Pheripheral.Items[row - 1].SubItems.RemoveAt(1);
                 }
                 foreach (var item in arr)
                 {
+
                     ListViewItem.ListViewSubItem subItem = new ListViewItem.ListViewSubItem() { Text = item };
                     f.CustomListView_Pheripheral.Items[row - 1].SubItems.Add(subItem);
+                    if (item == "ON")
+                    {
+                        f.CustomListView_Pheripheral.Items[row - 1].SubItems[1].BackColor = Color.GreenYellow;
+                    }
+                    else {
+                        f.CustomListView_Pheripheral.Items[row - 1].SubItems[1].BackColor = Color.Red;
+                    }
                 }
             }
         }

@@ -29,7 +29,7 @@ namespace listView_Test
         public const int CELL3_PACKAGE2 = 6;
         public const int CELL4_PACKAGE2 = 7;
         public const  int NUMBER_BATTERY = 16;
-        public const  int NUMBER_PACKET = 3;
+        public const  int NUMBER_PACKET = 2;
         public const  int NUMBER_PHERI = 16;
         public const int TAB_BATTERY_COLUMN = 5;
         public const int SIZE_BUFFER_TX = 6;

@@ -120,35 +120,41 @@ namespace listView_Test
                 Display.Add_row_data_pheripheral(i, init, this);
             }
         }
-
+        /// <summary>
+        /// LoadTabControl: Load Tab Battery, Package, Peripheral
+        /// </summary>
         void LoadTabControl() {
             CustomTabControl.Dock = DockStyle.None;
             this.tabBattery.Controls.Add(this.CustomListView_Battery);
             this.tabPackage.Controls.Add(this.CustomListView_Package);
             this.tabPheripheral.Controls.Add(this.CustomListView_Pheripheral);
         }
+        /// <summary>
+        /// config the format of listview battery
+        /// 5 columns: Name battery, Voltage, Temperature, Warning Voltage, Warning Temperature
+        /// 8 rows: Battery 1 .. 8
+        /// </summary>
         void LoadListView_battery() {
             CustomListView_Battery.FullRowSelect = true;
             CustomListView_Battery.GridLines = true;
+            
             CustomListView_Battery.Columns.Add("Name Battery ");
             CustomListView_Battery.Columns.Add("Voltage");
             CustomListView_Battery.Columns.Add("Temperater");
-            //CustomListView_Battery.Columns.Add("Blance status");
-            CustomListView_Battery.Columns.Add("Warning Voltage");
-            CustomListView_Battery.Columns.Add("Warning Temperature");
-
-
-            //ListViewItem item1 = new ListViewItem();
-            //item1.Text = "Item1";
-            //item1.SubItems.Add(new ListViewItem.ListViewSubItem() { Text = "Sub Item 1" });
+            CustomListView_Battery.Columns.Add("Status Voltage");
+            CustomListView_Battery.Columns.Add("Status Temperature");
             for (int i = 1; i <= Constant.NUMBER_BATTERY / 2; i++)
             {
-                CustomListView_Battery.Items.Add("Battery " + i.ToString());
+                CustomListView_Battery.Items.Add("Cell " + i.ToString());
             }
             CustomListView_Battery.View = View.Details;
             CustomListView_Battery.Dock = DockStyle.Fill;
-            //init_listView_battery();
         }
+        /// <summary>
+        /// config the format of listview package
+        /// 6 columns: Namepackage, Capacity, Temperature, Current, Connect, Warning
+        /// 3 rows: Package1, Package2, All system
+        /// </summary>
         void LoadListView_Package() {
             CustomListView_Battery.FullRowSelect = true;
             CustomListView_Battery.GridLines = true;
@@ -157,16 +163,19 @@ namespace listView_Test
             CustomListView_Package.FullRowSelect = true;
             CustomListView_Package.GridLines = true;
             CustomListView_Package.Columns.Add("Name Package");
-            CustomListView_Package.Columns.Add("Capacity");
-            CustomListView_Package.Columns.Add("Temperater");
+            CustomListView_Package.Columns.Add("Voltage");
+            CustomListView_Package.Columns.Add("Temperature");
             CustomListView_Package.Columns.Add("Current");
-            //CustomListView_Package.Columns.Add("Balance");
-            CustomListView_Package.Columns.Add("Connect");
-            CustomListView_Package.Columns.Add("Warning");
+            CustomListView_Package.Columns.Add("Status connect");
+            CustomListView_Package.Columns.Add("Status package");
             CustomListView_Package.Items.Add("Package 1");
             CustomListView_Package.Items.Add("Package 2");
-            CustomListView_Package.Items.Add("All system");
         }
+        /// <summary>
+        /// config listview of peripheral
+        /// 2 columns: Name peripheral
+        /// 4 rows: relay 1..4
+        /// </summary>
         void LoadListView_Pheripheral()
         {
             CustomListView_Pheripheral.FullRowSelect = true;
@@ -175,7 +184,7 @@ namespace listView_Test
             CustomListView_Pheripheral.Dock = DockStyle.Fill;
             CustomListView_Pheripheral.FullRowSelect = true;
             CustomListView_Pheripheral.GridLines = true;
-            CustomListView_Pheripheral.Columns.Add("Name Pheripheral");
+            CustomListView_Pheripheral.Columns.Add("Name Relay");
             CustomListView_Pheripheral.Columns.Add("Status");
 
             CustomListView_Pheripheral.Items.Add("Relay 1 - Package 1");
@@ -184,6 +193,9 @@ namespace listView_Test
             CustomListView_Pheripheral.Items.Add("Relay 4 - Fan 2");
 
         }
+        /// <summary>
+        /// Load ComboxBox of Serial Port
+        /// </summary>
         void LoadComboBox_Serial()
         {
             var ports = SerialPort.GetPortNames();
@@ -202,6 +214,9 @@ namespace listView_Test
             cbStop.DataSource = stop_bits;
 
         }
+        /// <summary>
+        /// Load comboBox of object to monitor in chart 1
+        /// </summary>
         void LoadComboBox_Obj_Chart1() {
             cbSelectObjChart1.Items.Add("Package 1");
             cbSelectObjChart1.Items.Add("Package 2");
@@ -216,6 +231,9 @@ namespace listView_Test
             cbSelectObjChart1.Items.Add("Cell 4 - Package 2");
             cbSelectObjChart1.SelectedIndex = 0;
         }
+        /// <summary>
+        /// Load comboBox of object to monitor in chart 2
+        /// </summary>
         void LoadComboBox_Obj_Chart2()
         {
             cbSelectObjChart2.Items.Add("Package 1");
@@ -231,7 +249,9 @@ namespace listView_Test
             cbSelectObjChart2.Items.Add("Cell 4 - Package 2");
             cbSelectObjChart2.SelectedIndex = 0;
         }
-
+        /// <summary>
+        ///  Load this function in first run
+        /// </summary>
         public Form1()
         {
             InitializeComponent();
@@ -240,12 +260,17 @@ namespace listView_Test
             LoadListView_battery();
             LoadListView_Package();
             LoadListView_Pheripheral();
-            Port.DataReceived += new SerialDataReceivedEventHandler(uart_read_even);
+            Port.DataReceived += new SerialDataReceivedEventHandler(uart_read_event);
             access_db.StrConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=E:\\App_C#\\Template\\listView_Test\\test.accdb";
             access_db.Conn = new OleDbConnection(access_db.StrConn);
             access_db.connect_access();
 
         }
+        /// <summary>
+        /// When hit the event form load
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Form1_Load(object sender, EventArgs e)
         {
             System.Windows.Forms.ToolTip toolTip1 = new System.Windows.Forms.ToolTip();
@@ -269,7 +294,11 @@ namespace listView_Test
             MyChart.myRealTimeChart2("Time", "Voltage", "Monitoring Voltage Package", 0, 5);
         }
 
-
+        /// <summary>
+        /// make the random data to test listview battery
+        /// </summary>
+        /// <param name="sender">timer set event</param>
+        /// <param name="e"></param>
         private void timer1_Tick(object sender, EventArgs e)
         {
             //Console.WriteLine("timer check 1");
@@ -282,7 +311,11 @@ namespace listView_Test
             Display.Add_row_data_battery(INDEX_BATTERY++, test, this);
             if (INDEX_BATTERY == Constant.NUMBER_BATTERY + 1) INDEX_BATTERY = 1;
         }
-
+        /// <summary>
+        /// make the random data to test listview package
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TimerModifPackage_Tick(object sender, EventArgs e)
         {
         //    //Console.WriteLine("timer check  2");
@@ -308,6 +341,11 @@ namespace listView_Test
             //if (INDEX_PHERI == Constant.NUMBER_PHERI + 1) INDEX_PHERI = 1;
         }
 
+        /// <summary>
+        /// button connect to serial Port
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button1_Click(object sender, EventArgs e)
         {
 
@@ -358,12 +396,18 @@ namespace listView_Test
             }
             else {
                 Port.Close();
+                //reset counter for received
+                number_byte_read = 0;
                 btnConnectSerial.Text = "Connect";
                 btnConnectSerial.BackColor = Color.Lime;
             }
 
         }
-
+        /// <summary>
+        /// button refresh to get the new COM ports
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             var ports = SerialPort.GetPortNames();
@@ -376,22 +420,23 @@ namespace listView_Test
         private bool update = false;
         int success_data = 0;
         int fail_data = 0;
-        private void uart_read_even(object sender, SerialDataReceivedEventArgs e)
+        /// <summary>
+        /// Event when has the new data to buffer of com port
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void uart_read_event(object sender, SerialDataReceivedEventArgs e)
         {
             byte crc = 0x00;
             int bytes = Port.BytesToRead;
             byte[] read = new byte[bytes];
             Port.Read(read, 0, bytes);
             if (bytes == 0) return;
-            
-            //string 
-            string content = " test ";
             foreach (var item in read)
             {
                 if (number_byte_read >= 200) number_byte_read = 0;
                 buffer_rx[number_byte_read] = (byte)item;
-                // Console.WriteLine("number: {0} byte {1:X2}", number_byte_read, buffer_rx[number_byte_read]);
-                //Console.Write("{0:X2} ", (byte)item);
+                // when get the end of the frame it will tranfer clear buffer_rx and copy all to data
                 if (buffer_rx[134] == '\r')
                 {
                     Array.Copy(buffer_rx, 0, data, 0, 135);
@@ -399,27 +444,21 @@ namespace listView_Test
                     Array.Clear(buffer_rx, 0, buffer_rx.Length);
                     update = true;
                 }
-                //else if (buffer_rx[number_byte_read] == '\r' && number_byte_read != 134) {
-                //    Console.WriteLine("byte wrong {0:X2} number {1}", buffer_rx[number_byte_read], number_byte_read);
-                //    number_byte_read = -1;
-                //    Console.WriteLine("Wrong end data");
-                //}
                 number_byte_read++;
-                content += " " + ((byte)item).ToString("X2");
             }
-            //Console.WriteLine("---------------------------------------------");
-            //Console.WriteLine("in event " + counter.ToString() + content +"with number byte is " +bytes.ToString());
             counter++;
-
-
+            // when have the end frame it will goto update
             if (update)
             {
                 update = false;
+                // I means this frame is information frame
+                // E means this frame is the emergency frame
+                // H means this frame is the humant touch (relay 1 - 4)
                 if (data[0] == 'I' || data[0] == 'E' || data[0] == 'H')
                 {
                     int number_bytes = data.Length;
                     string content1 = "number of bytes read is" + data.Length.ToString() + ": ";
-                 
+                    // if this is the mergency frame it will update the status buffer
                     if (Data.check_correct_emerPackage(data,
                                                         number_bytes,
                                                         ref status_emer_bar1,
@@ -431,6 +470,7 @@ namespace listView_Test
                         success_data++;
                         Console.WriteLine("Number success {0} Number fail {1}", success_data, fail_data);
                     }
+                    // if this is the information frame it will update voltage, temperature, .. buffer
                     if (Data.check_correct_inforPackage(data,
                                                         number_bytes,
                                                         ref battery_voltage,
@@ -456,6 +496,7 @@ namespace listView_Test
                         SetChartRealTime2();
                         SetChartForm2RealTime();
                     }
+                    // if this is the peripheral frame it will updates the peripheral information
                     if (Data.check_correct_periPackage(data,
                                                        number_bytes,
                                                        ref status_peripheral,
@@ -471,6 +512,7 @@ namespace listView_Test
                 else
                 {
                     fail_data++;
+                    number_byte_read = 0;
                     Console.WriteLine("Number success {0} Number fail {1}", success_data, fail_data);
                     Port.DiscardInBuffer();
                 }
@@ -478,6 +520,9 @@ namespace listView_Test
            
 
         }
+        /// <summary>
+        /// When have the new data the icon update will visible
+        /// </summary>
         public void SetIconChart1() {
             if (this.pbChart1.InvokeRequired) {
                 SetIconUpdateChart1 d = new SetIconUpdateChart1(SetIconChart1);
@@ -489,6 +534,9 @@ namespace listView_Test
                 pbChart1.Visible = true;
             }
         }
+        /// <summary>
+        /// when have the new data the icon will sisible
+        /// </summary>
         public void SetIconChart2()
         {
             if (this.pbChart1.InvokeRequired)
@@ -502,10 +550,11 @@ namespace listView_Test
                 pbChart2.Visible = true;
             }
         }
-      
+      /// <summary>
+      /// Function help draw real time data to the Chart Form 
+      /// </summary>
         void SetChartForm2RealTime()
         {
-
             if (chart_form.Chart_real_time == true)
             {
                 string whatmonitor = chart_form.ObjectMonitor;
@@ -570,12 +619,16 @@ namespace listView_Test
             }
 
         }
-        //private void OnDataChanged(object sender, EventArgs e, double voltage, double temperature,double current)
-        //{
-        //    if (this.DataChanged != null)
-        //        this.DataChanged(this, e);
-        //}
-        // set table ListView Information
+        /// <summary>
+        /// Set listview battery when have the information data frame
+        /// </summary>
+        /// <param name="battery_voltage"> voltage battery buffer</param>
+        /// <param name="battery_temperature"> temperature battery buffer</param>
+        /// <param name="status_battery"></param>
+        /// <param name="status_adding"></param>
+        /// <param name="status_emer_bar1"></param>
+        /// <param name="status_emer_bar2"></param>
+        /// <param name="size"></param>
         public void SetListView_Infor(float[] battery_voltage,
                          float[] battery_temperature,
                          bool[] status_battery,
@@ -605,7 +658,14 @@ namespace listView_Test
             }
 
         }
-        // set table ListView Package
+        /// <summary>
+        /// set table ListView Package
+        /// </summary>
+        /// <param name="battery_voltage"></param>
+        /// <param name="temperature"></param>
+        /// <param name="status_battery"></param>
+        /// <param name="status_peripheral"></param>
+        /// <param name="size"></param>
         public void SetListView_Pakage(float[] battery_voltage,
                          float[] temperature,
                          bool[] status_battery,
@@ -643,7 +703,8 @@ namespace listView_Test
 
                 Package row1 = new Package();
                 row1.capacity = battery_voltage[0] + battery_voltage[1] + battery_voltage[2] + battery_voltage[3];
-                row1.current = battery_temperature[9];
+                row1.current = battery_temperature[9];//FIX2
+                //row1.current = 0;
                 // if current < 0 discharge current>0 charge (dong duong khi sac dong am khi xa)
                 row1.temperater = (battery_temperature[0] + battery_temperature[1] + battery_temperature[2] + battery_temperature[3])/4;
                 row1.warning = status_package_1;
@@ -661,7 +722,8 @@ namespace listView_Test
 
                 Package row2 = new Package();
                 row2.capacity = battery_voltage[4] + battery_voltage[5] + battery_voltage[6] + battery_voltage[7];
-                row2.current = battery_temperature[10];
+                row2.current = battery_temperature[10];//FIX2
+                //row2.current = 0;//FIX2
                 // if current < 0 discharge current>0 charge (dong duong khi sac dong am khi xa)
                 row2.temperater = (battery_temperature[4] + battery_temperature[5] + battery_temperature[6] + battery_temperature[7])/4;
                 row2.warning = status_package_2;
@@ -676,31 +738,16 @@ namespace listView_Test
                 voltage_package[Constant.INDEX_PACKAGE2] = row2.capacity;
                 temperature_package[Constant.INDEX_PACKAGE2] = row2.temperater;
                 current_package[Constant.INDEX_PACKAGE2] = row2.current;
-                Package row3 = new Package();
-                row3.capacity = (row1.capacity + row2.capacity)/2;
-                row3.current = battery_temperature[8];
-                // if current < 0 discharge current>0 charge (dong duong khi sac dong am khi xa)
-                row3.temperater = (row1.temperater + row2.temperater)/2;
-                row3.warning = status_package_1 | status_package_2;
-                row3.status_balance = false;
-                if (row1.status_connect == 0 && row2.status_connect == 0)
-                {
-                    row3.status_connect = 0;
-                }
-                else if (row3.current == 0) { row3.status_connect = 1; }
-                else if (row3.current > 0) { row3.status_connect = 2; }
-                else if (row3.current < 0) { row3.status_connect = 3; }
-                Display.Add_row_data_package(3, row3, this);
-                access_db.insert_package("Package", row3, "All Package");
-                // -- set to global variable
-                voltage_package[Constant.INDEX_ALL] = row3.capacity;
-                temperature_package[Constant.INDEX_ALL] = row3.temperater;
-                current_package[Constant.INDEX_ALL] = row3.current;
-                //access_db.insert_battery("Battery", temp, i + 1);
+                
             }
 
-        } 
-        // set table listView pheripheral
+        }
+        /// <summary>
+        /// set table listView pheripheral
+        /// </summary>
+        /// <param name="status_pheripheral"></param>
+        /// <param name="status_adding_pheripheral"></param>
+        /// <param name="size"></param>
         public void SetListView_Pheripheral(bool[] status_pheripheral, bool[] status_adding_pheripheral, int size)
         {
             //  byte 1 bit1 bit2 bit3 bit4
@@ -742,6 +789,9 @@ namespace listView_Test
             }
         
         }
+        /// <summary>
+        /// Set chart real time 1
+        /// </summary>
         public void SetChartRealTime1() {
             if (this.chart1.InvokeRequired)
             {
@@ -759,6 +809,9 @@ namespace listView_Test
                 }
             }
         }
+        /// <summary>
+        /// Set chart real time 2
+        /// </summary>
         public void SetChartRealTime2() {
             if (this.chart1.InvokeRequired)
             {
@@ -777,6 +830,10 @@ namespace listView_Test
                 }
             }
         }
+        /// <summary>
+        /// update chart 1 real time
+        /// </summary>
+        /// <param name="myChart"></param>
         public void update_chart_package_chart1(Real_Time_Chart myChart) {
             if (objectChart1 == "Package 1")
             {
@@ -790,6 +847,10 @@ namespace listView_Test
                 make_update_package1(Constant.INDEX_ALL, voltageChart1, temperatureChart1, currentChart1, MyChart);
             }
         }
+        /// <summary>
+        /// update chart 2 real time
+        /// </summary>
+        /// <param name="myChart"></param>
         public void update_chart_package_chart2(Real_Time_Chart myChart)
         {
             if (objectChart2 == "Package 1")
@@ -805,6 +866,14 @@ namespace listView_Test
                 make_update_package2(Constant.INDEX_ALL, voltageChart2, temperatureChart2, currentChart2, MyChart);
             }
         }
+        /// <summary>
+        /// help draw the package information on chart 1
+        /// </summary>
+        /// <param name="index"> the package index </param>
+        /// <param name="ifVoltage"> is monitor voltage of package</param>
+        /// <param name="ifTemperature"> is monitor temperature of package</param>
+        /// <param name="Ifcurrent">is monitor current of package</param>
+        /// <param name="myChart">the instance of Chart draw to</param>
         public void make_update_package1(int index, bool ifVoltage, bool ifTemperature, bool Ifcurrent, Real_Time_Chart myChart)
         {
             if (ifVoltage && ifTemperature && Ifcurrent)
@@ -817,7 +886,7 @@ namespace listView_Test
             }
             else if (ifVoltage && Ifcurrent)
             {
-                myChart.addPointToChart1(voltage_package[index], temperature_package[index], current_package[index], DateTime.Now);
+                myChart.addPointToChart1(voltage_package[index],  current_package[index], DateTime.Now);
             }
             else if (ifTemperature && Ifcurrent)
             {
@@ -836,6 +905,14 @@ namespace listView_Test
                 myChart.addPointToChart1(current_package[index], DateTime.Now);
             }
         }
+        /// <summary>
+        /// help draw the package information on chart 2
+        /// </summary>
+        /// <param name="index"> the package index </param>
+        /// <param name="ifVoltage"> is monitor voltage of package</param>
+        /// <param name="ifTemperature"> is monitor temperature of package</param>
+        /// <param name="Ifcurrent">is monitor current of package</param>
+        /// <param name="myChart">the instance of Chart draw to</param>
         public void make_update_package2(int index, bool ifVoltage, bool ifTemperature, bool Ifcurrent, Real_Time_Chart myChart)
         {
             if (ifVoltage && ifTemperature && Ifcurrent)
@@ -848,7 +925,7 @@ namespace listView_Test
             }
             else if (ifVoltage && Ifcurrent)
             {
-                myChart.addPointToChart2(voltage_package[index], temperature_package[index], current_package[index], DateTime.Now);
+                myChart.addPointToChart2(voltage_package[index], current_package[index], DateTime.Now);
             }
             else if (ifTemperature && Ifcurrent)
             {
@@ -867,6 +944,10 @@ namespace listView_Test
                 myChart.addPointToChart2(current_package[index], DateTime.Now);
             }
         }
+        /// <summary>
+        /// update the cell information in chart1
+        /// </summary>
+        /// <param name="myChart"></param>
         public void update_chart_cell_chart1(Real_Time_Chart myChart) {
             switch (objectChart1)
             {
@@ -902,6 +983,10 @@ namespace listView_Test
                     break;
             }
         }
+        /// <summary>
+        /// update the cell information in chart2
+        /// </summary>
+        /// <param name="myChart"></param>
         public void update_chart_cell_chart2(Real_Time_Chart myChart)
         {
             switch (objectChart2)
@@ -938,6 +1023,13 @@ namespace listView_Test
                     break;
             }
         }
+        /// <summary>
+        /// help draw the cell information in chart 1
+        /// </summary>
+        /// <param name="myChart"> the instance draw to </param>
+        /// <param name="voltage"> is monitor voltage</param>
+        /// <param name="temperature">is monitor temperature</param>
+        /// <param name="index">the cell that is monitor</param>
         public void make_update_cell_chart1(Real_Time_Chart myChart, bool voltage, bool temperature,int index) {
             if (voltage && temperature) {
                 myChart.addPointToChart1(battery_voltage[index], battery_temperature[index], DateTime.Now);
@@ -951,6 +1043,13 @@ namespace listView_Test
                 myChart.addPointToChart1(battery_temperature[index], DateTime.Now);
             }
         }
+        /// <summary>
+        /// help draw the cell information in chart 2
+        /// </summary>
+        /// <param name="myChart"> the instance draw to </param>
+        /// <param name="voltage"> is monitor voltage</param>
+        /// <param name="temperature">is monitor temperature</param>
+        /// <param name="index">the cell that is monitor</param>
         public void make_update_cell_chart2(Real_Time_Chart myChart, bool voltage, bool temperature, int index)
         {
             if (voltage && temperature)
@@ -966,6 +1065,11 @@ namespace listView_Test
                 myChart.addPointToChart2(battery_temperature[index], DateTime.Now);
             }
         }
+        /// <summary>
+        /// Open new Form that help user can see the real time chart and history chart
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnChart_Click(object sender, EventArgs e)
         {
             FLAG_REALTIME_CHART = 1;
@@ -979,13 +1083,11 @@ namespace listView_Test
         private System.Windows.Forms.ToolTip tooltip = new System.Windows.Forms.ToolTip();
 
     
-
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            DateTime now = DateTime.Now;
-            chart_form.chart1.Series[0].Points.AddXY(now, 5);
-        }
-
+        /// <summary>
+        /// Button Monitor in Chart 1
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnExecuteMonitoring_Click(object sender, EventArgs e)
         {
             // hit then config again chart1
@@ -1000,15 +1102,16 @@ namespace listView_Test
                 return;
             }
             int maxY =10;
-            if (objectChart1 == "Package 1" || objectChart1 == "Package 2" ||objectChart1 == "All package")
+            int minY = 0;
+            if (objectChart1 == "Package 1" || objectChart1 == "Package 2" || objectChart1 == "All package")
             {
                 if (temperatureChart1)
                 {
-                    maxY = 120;
+                    maxY = 80;
                 }
                 else if (voltageChart1)
                 {
-                    maxY = 20;
+                    maxY = 18;
                 }
                 else
                 {
@@ -1019,19 +1122,20 @@ namespace listView_Test
             {
                 if (temperatureChart1)
                 {
-                    maxY = 120;
+                    maxY = 80;
                 }
                 else if (voltageChart1)
                 {
                     maxY = 5;
                 }
             }
+            if (currentChart1) minY = -3;
             string title = "Monitoring "+ objectChart1;
             string label_x = "Time";
             string label_y = (voltageChart1) ? "Voltage " : "";
             label_y += (temperatureChart1) ? "Temperature " : "";
             label_y += (currentChart1) ? "Current " : "";
-            MyChart.myRealTimeChart1(label_x, label_y, title, 0, maxY);
+            MyChart.myRealTimeChart1(label_x, label_y, title, minY, maxY);
             if (voltageChart1 == false) {
                 MyChart.Chart1.Series.Remove(MyChart.Chart1.Series["Voltage"]);
             }
@@ -1045,7 +1149,11 @@ namespace listView_Test
             }
 
         }
-
+        /// <summary>
+        /// button monitor in chart 2
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button2_Click(object sender, EventArgs e)
         {
             // hit then config again chart2
@@ -1065,14 +1173,15 @@ namespace listView_Test
             label_y += (temperatureChart2) ? "Temperature " : "";
             label_y += (currentChart2) ? "Current " : "";
             int maxY = 10 ;
+            int minY = 0;
             if (objectChart2 == "Package 1" || objectChart2 == "Package 2" || objectChart2 == "All package")
             {
                 if (temperatureChart2) {
-                    maxY = 120;
+                    maxY = 80;
                 }
                 else if (voltageChart2)
                 {
-                    maxY = 20;
+                    maxY = 18;
                 }
                 else
                 {
@@ -1083,14 +1192,15 @@ namespace listView_Test
             {
                 if (temperatureChart2)
                 {
-                    maxY = 120;
+                    maxY = 80;
                 }
                 else if (voltageChart2)
                 {
                     maxY = 5;
                 }
             }
-            MyChart.myRealTimeChart2(label_x, label_y, title, 0, maxY);
+            if (currentChart2) minY = -3;
+            MyChart.myRealTimeChart2(label_x, label_y, title, minY, maxY);
             if (voltageChart2 == false)
             {
                 MyChart.Chart2.Series.Remove(MyChart.Chart2.Series["Voltage"]);
@@ -1104,7 +1214,11 @@ namespace listView_Test
                 MyChart.Chart2.Series.Remove(MyChart.Chart2.Series["Current"]);
             }
         }
-
+        /// <summary>
+        /// event selectedIndexChaged help make more interract  
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void cbSelectObjChart1_SelectedIndexChanged(object sender, EventArgs e)
         {
             string selected = cbSelectObjChart1.SelectedItem.ToString();
@@ -1133,7 +1247,7 @@ namespace listView_Test
         bool zoomingChart1Now = false;
         private void chart1_MouseDown(object sender, MouseEventArgs e)
         {
-            Console.WriteLine("Chart 1 Move down");
+            Console.WriteLine("Chart 1 Move down draw retangle");
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
                 return;
             this.Focus();
@@ -1163,7 +1277,7 @@ namespace listView_Test
 
         private void chart1_MouseUp(object sender, MouseEventArgs e)
         {
-            Console.WriteLine("Move up");
+            Console.WriteLine("Chart 1 Move up draw the retangle");
             if (zoomingChart1Now && e.Button == MouseButtons.Left)
             {
                 DrawZoomRect(); //Redraw the selection 
@@ -1222,23 +1336,20 @@ namespace listView_Test
         }
         private void SetZoomAxisScale(Axis axis, int pxLow, int pxHi)
         {
-
-            Console.WriteLine("-----------------start function SetZoomAxisScale----------------");
             double minValue = Math.Max(axis.Minimum, axis.PixelPositionToValue(pxLow));
             double maxValue = Math.Min(axis.Maximum, axis.PixelPositionToValue(pxHi));
             double axisInterval = 0.2;
             double axisIntMinor = 0.2;
-            Console.WriteLine("minValue {0}", minValue);
-            Console.WriteLine("maxValue {0}", maxValue);
-            Console.WriteLine("axisInterval {0}", axisInterval);
-            Console.WriteLine("axisIntMinor {0}", axisIntMinor);
+            //Console.WriteLine("minValue {0}", minValue);
+            //Console.WriteLine("maxValue {0}", maxValue);
+            //Console.WriteLine("axisInterval {0}", axisInterval);
+            //Console.WriteLine("axisIntMinor {0}", axisIntMinor);
             axisInterval = (maxValue - minValue) / 5d;
             axis.Minimum = minValue;
             axis.Maximum = maxValue;
             // axis.Interval = axisInterval;
             // axis.MinorTickMark.Interval = axisIntMinor;
             SetAxisFormats();
-            Console.WriteLine("-----------------end function SetZoomAxisScale------------------------");
         }
         private void SetAxisFormats()
         {
@@ -1259,6 +1370,7 @@ namespace listView_Test
        
         }
         int zoom_level_chart1 = 0;
+        // THIS EVENT HAVE DELETED BUT STAY THERE FOR OPTIMIZING LATER
         private void chart1_MouseClick(object sender, MouseEventArgs e)
         {
             Console.WriteLine("Zoom in clicked");
@@ -1287,7 +1399,7 @@ namespace listView_Test
 
         private void chart2_MouseDown(object sender, MouseEventArgs e)
         {
-            Console.WriteLine("Move down");
+            Console.WriteLine("chart 2 Move down draw retangle");
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
                 return;
             this.Focus();
@@ -1317,7 +1429,7 @@ namespace listView_Test
 
         private void chart2_MouseUp(object sender, MouseEventArgs e)
         {
-            Console.WriteLine("Move up");
+            Console.WriteLine("Move up for draw retangle");
             if (zoomingChart2Now && e.Button == MouseButtons.Left)
             {
                 DrawZoomRect_2(); //Redraw the selection 
@@ -1376,23 +1488,20 @@ namespace listView_Test
         }
         private void SetZoomAxisScale_2(Axis axis, int pxLow, int pxHi)
         {
-
-            Console.WriteLine("-----------------start function SetZoomAxisScale----------------");
             double minValue = Math.Max(axis.Minimum, axis.PixelPositionToValue(pxLow));
             double maxValue = Math.Min(axis.Maximum, axis.PixelPositionToValue(pxHi));
             double axisInterval = 0.2;
             double axisIntMinor = 0.2;
-            Console.WriteLine("minValue {0}", minValue);
-            Console.WriteLine("maxValue {0}", maxValue);
-            Console.WriteLine("axisInterval {0}", axisInterval);
-            Console.WriteLine("axisIntMinor {0}", axisIntMinor);
+            //Console.WriteLine("minValue {0}", minValue);
+            //Console.WriteLine("maxValue {0}", maxValue);
+            //Console.WriteLine("axisInterval {0}", axisInterval);
+            //Console.WriteLine("axisIntMinor {0}", axisIntMinor);
             axisInterval = (maxValue - minValue) / 5d;
             axis.Minimum = minValue;
             axis.Maximum = maxValue;
             // axis.Interval = axisInterval;
             // axis.MinorTickMark.Interval = axisIntMinor;
             SetAxisFormats_2();
-            Console.WriteLine("-----------------end function SetZoomAxisScale------------------------");
         }
         private void SetAxisFormats_2()
         {
@@ -1412,6 +1521,7 @@ namespace listView_Test
             }
         }
         int zoom_level_chart2 = 0;
+        // THIS EVENT HAVE DELETED BUT STAY THERE FOR OPTIMIZING LATER
         private void chart2_MouseClick(object sender, MouseEventArgs e)
         {
             Console.WriteLine("Zoom in clicked");
@@ -1435,13 +1545,22 @@ namespace listView_Test
         }
 
 
-
         //---- CONTROL INCON UPDATE -----------------
+        /// <summary>
+        /// event update data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void timer1_Tick_1(object sender, EventArgs e)
         {
             pbChart1.Visible = false;
             timerChangeChart1.Enabled = false;
         }
+        /// <summary>
+        /// event update data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void timerChangeChart2_Tick(object sender, EventArgs e)
         {
             pbChart2.Visible = false;
@@ -1449,6 +1568,11 @@ namespace listView_Test
         }
         //-----------------------------------------------------------------------------------------------------------
         // ------------------------------- CONTROL BATTERY MONTERING CIRCUIT --------------------------------
+        /// <summary>
+        /// send 0x01 when press relay 1 button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnRelay1_Click(object sender, EventArgs e)
         {
             //SetBufferSend(1, !Flag_package1, ref buffer_tx);
@@ -1456,29 +1580,44 @@ namespace listView_Test
             //reset_buffer_tx(ref buffer_tx, Constant.SIZE_BUFFER_TX);
         }
 
-       
-
+        /// <summary>
+        /// send 0x02 when press relay 2 button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnRelay2_Click(object sender, EventArgs e)
         {
             //SetBufferSend(2, !Flag_package2, ref buffer_tx);
             Port.Write(new byte[] { 0x02}, 0, 1);
             //reset_buffer_tx(ref buffer_tx, Constant.SIZE_BUFFER_TX);
         }
-
+        /// <summary>
+        /// send 0x03 when press fan 1 button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnFan1_Click(object sender, EventArgs e)
         {
             //SetBufferSend(3, !Flag_fan1, ref buffer_tx);
             Port.Write(new byte[] { 0x03}, 0, 1);
             //reset_buffer_tx(ref buffer_tx, Constant.SIZE_BUFFER_TX);
         }
-
+        /// <summary>
+        /// send 0x04 when press fan2 button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnFan2_Click(object sender, EventArgs e)
         {
             //SetBufferSend(4, !Flag_fan2, ref buffer_tx);
             Port.Write(new byte[] { 0x04}, 0, 1);
             //reset_buffer_tx(ref buffer_tx, Constant.SIZE_BUFFER_TX);
         }
-
+        /// <summary>
+        /// When press the wifi connect it will send format @SSID@<yourSSID>@PASS@<yourPASS> crc 0x0D
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnConnectWifi_Click(object sender, EventArgs e)
         {
             string ssid = "@SSID@"+txtSSID.Text;
@@ -1502,7 +1641,11 @@ namespace listView_Test
             Port.Write(bytes_send, 0, bytes_send.Length);
             Port.Write(new byte[] { crc , 0x0D ,(byte)'\n'}, 0, 3);
         }
-
+        /// <summary>
+        /// When pressDisconnect send @D@ crc 0x0D
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnDisconnecWifi_Click(object sender, EventArgs e)
         {
             string frame_disconnect = "@D@";
@@ -1515,6 +1658,7 @@ namespace listView_Test
             byte[] bytes_send = Encoding.ASCII.GetBytes(frame_disconnect);
             Port.Write(bytes_send, 0, bytes_send.Length);
             Port.Write(new byte[] { crc, 0x0D, (byte)'\n' }, 0, 3);
+            Console.WriteLine("Send disconnect signal");
         }
     }
 }

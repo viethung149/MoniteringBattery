@@ -60,7 +60,11 @@ namespace listView_Test
             chart1.Series[0].YValueMembers = "Data";
             // maker point
             chart1.Series[0].MarkerStyle = MarkerStyle.Diamond;
-            chart1.Series[0].MarkerSize = 8;
+            chart1.Series[1].MarkerStyle = MarkerStyle.Diamond;
+            chart1.Series[2].MarkerStyle = MarkerStyle.Diamond;
+            chart1.Series[0].MarkerSize = 7;
+            chart1.Series[1].MarkerSize = 7;
+            chart1.Series[2].MarkerSize = 7;
             //chart1.Series[0].MarkerColor = Color.Yellow;
             chart1.Series[0].MarkerBorderWidth = 3;
             // add title
@@ -89,7 +93,7 @@ namespace listView_Test
             chart1.ForeColor = Color.LightGray;
             //color
             chart1.Series["Voltage"].Color = Color.Red;
-            chart1.Series["Temperature"].Color = Color.Yellow;
+            chart1.Series["Temperature"].Color = Color.GreenYellow;
             chart1.Series["Current"].Color = Color.Blue;
             chart1.ChartAreas[0].AxisX.Minimum = DateTime.Now.ToOADate();
             chart1.ChartAreas[0].AxisX.Maximum = DateTime.Now.AddMinutes(2).ToOADate();
@@ -127,7 +131,11 @@ namespace listView_Test
             chart2.Series[0].YValueMembers = "Data";
             // maker point
             chart2.Series[0].MarkerStyle = MarkerStyle.Diamond;
+            chart2.Series[1].MarkerStyle = MarkerStyle.Diamond;
+            chart2.Series[2].MarkerStyle = MarkerStyle.Diamond;
             chart2.Series[0].MarkerSize = 7;
+            chart2.Series[1].MarkerSize = 7;
+            chart2.Series[2].MarkerSize = 7;
             //chart1.Series[0].MarkerColor = Color.Yellow;
             chart2.Series[0].MarkerBorderWidth = 3;
             // add title
@@ -155,7 +163,7 @@ namespace listView_Test
             chart2.ForeColor = Color.LightGray;
             //color
             chart2.Series["Voltage"].Color = Color.Red;
-            chart2.Series["Temperature"].Color = Color.Yellow;
+            chart2.Series["Temperature"].Color = Color.GreenYellow;
             chart2.Series["Current"].Color = Color.Blue;
             // min axis x
             chart2.ChartAreas[0].AxisX.Minimum = DateTime.Now.ToOADate();
@@ -274,7 +282,7 @@ namespace listView_Test
             }
             chart2.Series[0].Points.AddXY(time, voltage);
             chart2.Series[1].Points.AddXY(time, temperature);
-            chart2.Series[1].Points.AddXY(time, current);
+            chart2.Series[2].Points.AddXY(time, current);
         }
     }
 }
